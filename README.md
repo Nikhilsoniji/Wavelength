@@ -4,7 +4,7 @@ A music player built in React — a Spotify-inspired *pattern* (persistent
 playback, queue management, seekable progress) reimagined with a warm,
 analog "tape deck" visual identity instead of a literal clone.
 
-**[Live demo →](#)** _(add your Vercel link here after deploying)_
+**[Live demo →](#)** https://wavelength-5rso02w3c-wavelength3.vercel.app
 
 ![screenshot placeholder](#)
 

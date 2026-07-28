@@ -74,6 +74,7 @@ export const tracks = [
     duration: 233,
     hue: 40,
     src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+<<<<<<< HEAD
   },
   {
     id: 't9',
@@ -83,6 +84,17 @@ export const tracks = [
     duration: 227,
     hue: 28, // brass / amber
     src: '/audio/Nikhilsoni.mp3',
+=======
+  }, 
+  {
+    id: 't9',
+    title: 'EDM master',
+    artist: 'Odessa Lune',
+    album: 'Paper Weather',
+    duration: 233,
+    hue: 40,
+    src: '/Public/audio/Nikhilsoni.mp3',
+>>>>>>> 259557cb6c573739b25a8d84a00ab28a5d4147fc
   },
 ]
 
