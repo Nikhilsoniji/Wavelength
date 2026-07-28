@@ -82,7 +82,7 @@ export const tracks = [
     album: 'Paper Weather',
     duration: 233,
     hue: 40,
-    src: '/audio/Nikhilsoni.mp3',
+    src: '/Public/audio/Nikhilsoni.mp3',
   },
 ]
 
