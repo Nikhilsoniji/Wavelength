@@ -1,23 +1,25 @@
 :root {
-  /* Color: deep espresso-black surfaces, brass/amber signature accent,
-     a cool teal used sparingly as the "second voice" (waveform highlight). */
-  --bg: #12100e;
-  --surface: #1c1815;
-  --surface-2: #241f1a;
-  --border: #322b23;
-  --accent: #c9a227;
-  --accent-soft: rgba(201, 162, 39, 0.16);
+  /* Premium theme tokens — deep, warm surfaces with a luminous accent */
+  --bg: #0b0b0c;
+  --surface: rgba(255,255,255,0.03);
+  --surface-2: rgba(255,255,255,0.02);
+  --border: rgba(255,255,255,0.04);
+  --accent: linear-gradient(90deg, #ffd166, #ffb86b);
+  --accent-solid: #e6b23a;
+  --accent-soft: rgba(230,178,58,0.12);
   --teal: #4fd1c5;
-  --text: #f2ede4;
-  --text-dim: #9c9186;
-  --text-faint: #6b6259;
-  --danger: #d97757;
+  --text: #f7f6f4;
+  --text-dim: #bfb6ad;
+  --text-faint: #9a9188;
+  --danger: #ff6b6b;
 
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Space Grotesk', Inter, system-ui, sans-serif;
+  --font-body: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  --radius: 10px;
+  --radius: 14px;
+  --shadow-1: 0 8px 24px rgba(2,2,2,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+  --glass-border: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
 }
 
 * {
@@ -32,7 +34,9 @@ body,
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(255,214,138,0.03), transparent 8%),
+    radial-gradient(900px 400px at 90% 90%, rgba(79,209,197,0.02), transparent 10%),
+    var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
@@ -41,6 +45,10 @@ body {
 button {
   font-family: inherit;
   cursor: pointer;
+  border: none;
+  background: transparent;
+  color: inherit;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
 button:focus-visible,
@@ -61,8 +69,8 @@ input[type='range'] {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-2);
-  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -73,7 +81,49 @@ button:hover .row-play-overlay {
 }
 
 .track-list-row:hover {
-  background: var(--surface-2);
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: var(--shadow-1);
+}
+
+/* Card / glass surfaces used across the app */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+.sidebar {
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent);
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+.album-row {
+  padding: 8px;
+  border-radius: 10px;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+.album-row:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(2,2,2,0.6);
+}
+
+.row-play-overlay {
+  opacity: 0;
+  transition: opacity 140ms ease, transform 160ms ease;
+}
+.track-list-row:hover .row-play-overlay {
+  opacity: 1 !important;
+  transform: scale(1.02);
+}
+
+h1, h2, h3 {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.muted {
+  color: var(--text-dim);
 }
 
 @media (prefers-reduced-motion: reduce) {

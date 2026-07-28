@@ -1,4 +1,7 @@
+import { useMemo } from 'react'
 import { Library as LibraryIcon, ListMusic, Disc3 } from 'lucide-react'
+import Album from './Album'
+import { usePlayerStore } from '../store/usePlayerStore'
 
 const items = [
   { id: 'library', label: 'Library', Icon: LibraryIcon },
@@ -6,17 +9,22 @@ const items = [
 ]
 
 export default function Sidebar({ view, setView }) {
+  const library = usePlayerStore((s) => s.library)
+  const setQueue = usePlayerStore((s) => s.setQueue)
+  const play = usePlayerStore((s) => s.play)
+
+  const albums = useMemo(() => {
+    const m = new Map()
+    for (const t of library) {
+      const key = t.album ?? 'Unknown'
+      if (!m.has(key)) m.set(key, { name: key, artist: t.artist, hue: t.hue, trackIds: [] })
+      m.get(key).trackIds.push(t.id)
+    }
+    return Array.from(m.values())
+  }, [library])
+
   return (
-    <div
-      style={{
-        width: 220,
-        borderRight: '1px solid var(--border)',
-        padding: '24px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 24,
-      }}
-    >
+    <div className="sidebar" style={{ width: 240, padding: '28px 18px', display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px' }}>
         <Disc3 size={20} color="var(--accent)" />
         <span
@@ -59,6 +67,33 @@ export default function Sidebar({ view, setView }) {
           )
         })}
       </nav>
+
+      <div>
+        <h3
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 13,
+            fontWeight: 700,
+            margin: '6px 8px',
+            color: 'var(--text-dim)',
+          }}
+        >
+          Albums
+        </h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {albums.map((a) => (
+            <div key={a.name} style={{ padding: '0 4px' }}>
+              <Album
+                album={a}
+                onPlay={(ids) => {
+                  setQueue(ids)
+                  play(ids[0])
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
