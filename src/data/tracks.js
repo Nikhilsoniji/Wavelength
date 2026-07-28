@@ -74,7 +74,6 @@ export const tracks = [
     duration: 233,
     hue: 40,
     src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
-<<<<<<< HEAD
   },
   {
     id: 't9',
@@ -84,17 +83,6 @@ export const tracks = [
     duration: 227,
     hue: 28, // brass / amber
     src: '/audio/Nikhilsoni.mp3',
-=======
-  }, 
-  {
-    id: 't9',
-    title: 'EDM master',
-    artist: 'Odessa Lune',
-    album: 'Paper Weather',
-    duration: 233,
-    hue: 40,
-    src: '/Public/audio/Nikhilsoni.mp3',
->>>>>>> 259557cb6c573739b25a8d84a00ab28a5d4147fc
   },
 ]
 
@@ -109,7 +97,6 @@ export function waveformFor(trackId, bars = 64) {
   for (let i = 0; i < bars; i++) {
     seed = (seed * 1103515245 + 12345) >>> 0
     const base = (seed % 1000) / 1000
-    // shape it so it feels more like a track (swell in the middle) than pure noise
     const envelope = 0.35 + 0.65 * Math.sin((Math.PI * i) / bars)
     values.push(0.15 + base * 0.85 * envelope)
   }
