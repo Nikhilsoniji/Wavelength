@@ -74,6 +74,15 @@ export const tracks = [
     duration: 233,
     hue: 40,
     src: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
+  }, 
+  {
+    id: 't9',
+    title: 'Amber Hour',
+    artist: 'Odessa Lune',
+    album: 'Paper Weather',
+    duration: 233,
+    hue: 40,
+    src: '/audio/Nikhilsoni.mp3',
   },
 ]
 
