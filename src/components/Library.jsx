@@ -20,30 +20,14 @@ export default function Library() {
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
+      <div className="library-header">
         <div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 24,
-              fontWeight: 700,
-              margin: 0,
-            }}
-          >
-            Library
-          </h1>
-          <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: '4px 0 0' }}>
-            {library.length} tracks
-          </p>
+          <h1>Library</h1>
+          <p className="muted">{library.length} tracks</p>
         </div>
-        <SearchBar />
+        <div>
+          <SearchBar />
+        </div>
       </div>
 
       {filtered.length === 0 ? (

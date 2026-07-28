@@ -37,58 +37,17 @@ export default function PlayerBar({ seekTo }) {
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '260px 1fr 200px',
-        alignItems: 'center',
-        gap: 24,
-        padding: '12px 20px',
-        borderTop: '1px solid var(--border)',
-        background: 'var(--surface)',
-      }}
-    >
-      {/* Now playing */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+    <div className="player-bar card">
+      <div className="player-left">
         <AlbumArt hue={track.hue} size={48} rounded={6} spinning={isPlaying} />
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 600,
-              fontSize: 14,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {track.title}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--text-dim)',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {track.artist}
-          </div>
+        <div className="player-trackmeta">
+          <div className="player-title">{track.title}</div>
+          <div className="player-artist muted">{track.artist}</div>
         </div>
       </div>
 
-      {/* Transport + waveform */}
-      <div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 18,
-            marginBottom: 6,
-          }}
-        >
+      <div className="player-transport">
+        <div className="transport-controls">
           <IconButton
             label="Toggle shuffle"
             active={shuffle}
@@ -97,21 +56,7 @@ export default function PlayerBar({ seekTo }) {
             size={16}
           />
           <IconButton label="Previous track" onClick={prev} Icon={SkipBack} size={18} />
-          <button
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-            onClick={toggle}
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              border: 'none',
-              background: 'var(--accent)',
-              color: '#12100e',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          <button className="play-circle" aria-label={isPlaying ? 'Pause' : 'Play'} onClick={toggle}>
             {isPlaying ? <Pause size={16} fill="#12100e" /> : <Play size={16} fill="#12100e" />}
           </button>
           <IconButton label="Next track" onClick={next} Icon={SkipForward} size={18} />
@@ -123,27 +68,12 @@ export default function PlayerBar({ seekTo }) {
             size={16}
           />
         </div>
-        <WaveformSeek
-          trackId={track.id}
-          currentTime={currentTime}
-          duration={duration}
-          onSeek={seekTo}
-        />
+        <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} onSeek={seekTo} />
         <TapeCounter currentTime={currentTime} duration={duration} />
       </div>
 
-      {/* Volume */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifySelf: 'end' }}>
-        <button
-          aria-label={muted ? 'Unmute' : 'Mute'}
-          onClick={toggleMute}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-dim)',
-            display: 'flex',
-          }}
-        >
+      <div className="player-right">
+        <button className="icon-button muted" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
           <VolumeIcon size={17} />
         </button>
         <input
@@ -154,7 +84,6 @@ export default function PlayerBar({ seekTo }) {
           step={0.01}
           value={muted ? 0 : volume}
           onChange={(e) => setVolume(Number(e.target.value))}
-          style={{ width: 100, accentColor: 'var(--accent)' }}
         />
       </div>
     </div>
@@ -163,18 +92,7 @@ export default function PlayerBar({ seekTo }) {
 
 function IconButton({ label, onClick, Icon, size, active }) {
   return (
-    <button
-      aria-label={label}
-      aria-pressed={active}
-      onClick={onClick}
-      style={{
-        background: 'none',
-        border: 'none',
-        color: active ? 'var(--accent)' : 'var(--text-dim)',
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
+    <button aria-label={label} aria-pressed={active} onClick={onClick} className={`icon-button${active ? ' active' : ''}`}>
       <Icon size={size} />
     </button>
   )

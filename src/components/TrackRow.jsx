@@ -25,55 +25,18 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
   return (
     <div
       {...(dragHandleProps ?? {})}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '28px 40px 1fr 120px 56px',
-        alignItems: 'center',
-        gap: 12,
-        padding: '8px 12px',
-        borderRadius: 8,
-        background: isCurrent ? 'var(--accent-soft)' : 'transparent',
-        ...style,
-      }}
+      className={`track-row${isCurrent ? ' current' : ''}`}
+      style={style}
     >
-      <div
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 12,
-          color: isCurrent ? 'var(--accent)' : 'var(--text-faint)',
-          textAlign: 'center',
-        }}
-      >
-        {index}
-      </div>
+      <div className="track-index">{index}</div>
 
       <button
+        className="track-play-btn"
         aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         onClick={handlePlayClick}
-        style={{
-          width: 40,
-          height: 40,
-          position: 'relative',
-          background: 'none',
-          border: 'none',
-          padding: 0,
-        }}
       >
         <AlbumArt hue={track.hue} size={40} rounded={5} />
-        <span
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,0.35)',
-            borderRadius: 5,
-            opacity: 0,
-            transition: 'opacity 120ms ease',
-          }}
-          className="row-play-overlay"
-        >
+        <span className="row-play-overlay">
           {isCurrentlyPlaying ? (
             <Pause size={14} color="#fff" fill="#fff" />
           ) : (
@@ -82,55 +45,14 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
         </span>
       </button>
 
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 500,
-            fontSize: 14,
-            color: isCurrent ? 'var(--accent)' : 'var(--text)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {track.title}
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: 'var(--text-dim)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {track.artist}
-        </div>
+      <div className="track-meta">
+        <div className="track-title">{track.title}</div>
+        <div className="track-artist">{track.artist}</div>
       </div>
 
-      <div
-        style={{
-          fontSize: 12,
-          color: 'var(--text-dim)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}
-      >
-        {track.album}
-      </div>
+      <div className="track-album">{track.album}</div>
 
-      <div
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: 12,
-          color: 'var(--text-faint)',
-          textAlign: 'right',
-        }}
-      >
-        {formatDuration(track.duration)}
-      </div>
+      <div className="track-duration">{formatDuration(track.duration)}</div>
     </div>
   )
 }
