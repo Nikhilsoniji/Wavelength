@@ -77,7 +77,7 @@ export const tracks = [
   }, 
   {
     id: 't9',
-    title: 'Amber Hour',
+    title: 'EDM master',
     artist: 'Odessa Lune',
     album: 'Paper Weather',
     duration: 233,
