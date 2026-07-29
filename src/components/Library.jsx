@@ -19,15 +19,13 @@ export default function Library() {
   }, [library, searchQuery])
 
   return (
-    <div>
+    <div className="library-page">
       <div className="library-header">
         <div>
           <h1>Library</h1>
           <p className="muted">{library.length} tracks</p>
         </div>
-        <div>
-          <SearchBar />
-        </div>
+        <SearchBar />
       </div>
 
       {filtered.length === 0 ? (
@@ -35,12 +33,18 @@ export default function Library() {
           Nothing matches “{searchQuery}.” Try a different title, artist, or album.
         </p>
       ) : (
-        <div>
-          {filtered.map((track, i) => (
-            <div key={track.id} className="track-list-row" style={{ borderRadius: 8 }}>
-              <TrackRow track={track} index={i + 1} />
-            </div>
-          ))}
+        <div className="library-panel card">
+          <div className="library-toolbar">
+            <div className="library-subtitle">All songs</div>
+            <div className="library-count">{filtered.length} songs</div>
+          </div>
+          <div className="track-list">
+            {filtered.map((track, i) => (
+              <div key={track.id} className="track-list-row">
+                <TrackRow track={track} index={i + 1} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

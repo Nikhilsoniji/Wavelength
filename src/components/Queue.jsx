@@ -78,28 +78,24 @@ export default function Queue() {
   }
 
   return (
-    <div>
-      <h1
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: 24,
-          fontWeight: 700,
-          margin: '0 0 4px',
-        }}
-      >
-        Queue
-      </h1>
-      <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: '0 0 20px' }}>
-        Drag the handle to reorder what plays next.
-      </p>
+    <div className="queue-page">
+      <div className="queue-header card">
+        <div>
+          <h1>Queue</h1>
+          <p>Drag the handle to reorder what plays next.</p>
+        </div>
+        <div className="queue-summary">{queueTracks.length} tracks</div>
+      </div>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={queue} strategy={verticalListSortingStrategy}>
-          {queueTracks.map((track, i) => (
-            <SortableRow key={track.id} id={track.id} track={track} index={i + 1} />
-          ))}
-        </SortableContext>
-      </DndContext>
+      <div className="queue-list card">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={queue} strategy={verticalListSortingStrategy}>
+            {queueTracks.map((track, i) => (
+              <SortableRow key={track.id} id={track.id} track={track} index={i + 1} />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
     </div>
   )
 }

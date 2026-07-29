@@ -24,22 +24,13 @@ export default function Sidebar({ view, setView }) {
   }, [library])
 
   return (
-    <div className="sidebar" style={{ width: 240, padding: '28px 18px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 8px' }}>
-        <Disc3 size={20} color="var(--accent)" />
-        <span
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            fontSize: 17,
-            letterSpacing: 0.2,
-          }}
-        >
-          Wavelength
-        </span>
+    <div className="sidebar">
+      <div className="sidebar-header">
+        <Disc3 size={22} color="var(--accent)" />
+        <span className="sidebar-title">Wavelength</span>
       </div>
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <nav className="nav-list">
         {items.map(({ id, label, Icon }) => {
           const active = view === id
           return (
@@ -47,42 +38,20 @@ export default function Sidebar({ view, setView }) {
               key={id}
               onClick={() => setView(id)}
               aria-current={active ? 'page' : undefined}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '9px 10px',
-                borderRadius: 8,
-                border: 'none',
-                background: active ? 'var(--accent-soft)' : 'transparent',
-                color: active ? 'var(--accent)' : 'var(--text-dim)',
-                fontSize: 14,
-                fontWeight: 500,
-                textAlign: 'left',
-              }}
+              className={`nav-item${active ? ' active' : ''}`}
             >
-              <Icon size={16} />
+              <Icon size={18} />
               {label}
             </button>
           )
         })}
       </nav>
 
-      <div>
-        <h3
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 13,
-            fontWeight: 700,
-            margin: '6px 8px',
-            color: 'var(--text-dim)',
-          }}
-        >
-          Albums
-        </h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div className="album-section">
+        <h3>Albums</h3>
+        <div className="album-list">
           {albums.map((a) => (
-            <div key={a.name} style={{ padding: '0 4px' }}>
+            <div key={a.name} className="album-list-item">
               <Album
                 album={a}
                 onPlay={(ids) => {

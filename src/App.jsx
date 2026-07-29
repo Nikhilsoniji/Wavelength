@@ -14,10 +14,10 @@ export default function App() {
   const { seekTo } = useAudioEngine()
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <div className="app-shell">
+      <div className="workspace">
         <Sidebar view={view} setView={setView} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: '28px 32px 100px' }}>
+        <main className="content">
           {view === 'library' ? <Library /> : <Queue />}
         </main>
       </div>

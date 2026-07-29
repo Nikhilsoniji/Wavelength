@@ -39,42 +39,44 @@ export default function PlayerBar({ seekTo }) {
   return (
     <div className="player-bar card">
       <div className="player-left">
-        <AlbumArt hue={track.hue} size={48} rounded={6} spinning={isPlaying} />
+        <AlbumArt hue={track.hue} size={52} rounded={10} spinning={isPlaying} />
         <div className="player-trackmeta">
           <div className="player-title">{track.title}</div>
           <div className="player-artist muted">{track.artist}</div>
         </div>
       </div>
 
-      <div className="player-transport">
+      <div className="player-center">
         <div className="transport-controls">
           <IconButton
             label="Toggle shuffle"
             active={shuffle}
             onClick={toggleShuffle}
             Icon={Shuffle}
-            size={16}
+            size={18}
           />
-          <IconButton label="Previous track" onClick={prev} Icon={SkipBack} size={18} />
+          <IconButton label="Previous track" onClick={prev} Icon={SkipBack} size={20} />
           <button className="play-circle" aria-label={isPlaying ? 'Pause' : 'Play'} onClick={toggle}>
-            {isPlaying ? <Pause size={16} fill="#12100e" /> : <Play size={16} fill="#12100e" />}
+            {isPlaying ? <Pause size={18} fill="#12100e" /> : <Play size={18} fill="#12100e" />}
           </button>
-          <IconButton label="Next track" onClick={next} Icon={SkipForward} size={18} />
+          <IconButton label="Next track" onClick={next} Icon={SkipForward} size={20} />
           <IconButton
             label="Cycle repeat mode"
             active={repeat !== 'off'}
             onClick={cycleRepeat}
             Icon={repeat === 'one' ? Repeat1 : Repeat}
-            size={16}
+            size={18}
           />
         </div>
-        <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} onSeek={seekTo} />
-        <TapeCounter currentTime={currentTime} duration={duration} />
+        <div className="player-progress-row">
+          <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} onSeek={seekTo} />
+          <TapeCounter currentTime={currentTime} duration={duration} />
+        </div>
       </div>
 
       <div className="player-right">
         <button className="icon-button muted" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
-          <VolumeIcon size={17} />
+          <VolumeIcon size={18} />
         </button>
         <input
           aria-label="Volume"
