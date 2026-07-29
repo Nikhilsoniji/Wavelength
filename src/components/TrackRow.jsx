@@ -47,12 +47,15 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
 
       <div className="track-meta">
         <div className="track-title">{track.title}</div>
-        <div className="track-artist">{track.artist}</div>
+        <div className="track-artist">
+          {track.artist}
+          {track.isLive ? <span className="track-live-badge">LIVE</span> : null}
+        </div>
       </div>
 
       <div className="track-album">{track.album}</div>
 
-      <div className="track-duration">{formatDuration(track.duration)}</div>
+      <div className="track-duration">{track.isLive ? 'Live' : formatDuration(track.duration)}</div>
     </div>
   )
 }
