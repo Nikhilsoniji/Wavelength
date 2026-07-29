@@ -1,16 +1,38 @@
 import { useMemo } from 'react'
 import { waveformFor } from '../data/tracks'
 
-export default function WaveformSeek({ trackId, currentTime, duration, onSeek }) {
+export default function WaveformSeek({ trackId, currentTime, duration, isLive, onSeek }) {
   // Recomputed per track (not cached across track changes) so the "waveform"
   // shown always matches the track actually loaded.
   const bars = useMemo(() => (trackId ? waveformFor(trackId) : []), [trackId])
-  const progress = duration > 0 ? currentTime / duration : 0
+  const hasSeekableDuration = Number.isFinite(duration) && duration > 0
+  const progress = hasSeekableDuration ? currentTime / duration : 0
 
   const handleClick = (e) => {
+    if (!hasSeekableDuration) return
     const rect = e.currentTarget.getBoundingClientRect()
     const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width))
     onSeek(ratio * duration)
+  }
+
+  if (!hasSeekableDuration) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 38,
+          color: 'var(--text-dim)',
+          background: 'rgba(255,255,255,0.04)',
+          borderRadius: 8,
+          padding: '8px 12px',
+          fontSize: 13,
+        }}
+      >
+        {isLive ? 'Live stream — seeking is unavailable' : 'No seek data available'}
+      </div>
+    )
   }
 
   return (

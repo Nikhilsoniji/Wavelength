@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
-import { Library as LibraryIcon, ListMusic, Disc3 } from 'lucide-react'
+import { Library as LibraryIcon, ListMusic, Disc3, Radio } from 'lucide-react'
 import Album from './Album'
 import { usePlayerStore } from '../store/usePlayerStore'
 
 const items = [
   { id: 'library', label: 'Library', Icon: LibraryIcon },
   { id: 'queue', label: 'Queue', Icon: ListMusic },
+  { id: 'radio', label: 'Radio', Icon: Radio },
 ]
 
 export default function Sidebar({ view, setView }) {

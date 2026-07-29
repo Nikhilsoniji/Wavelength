@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar'
 import AlbumArt from './components/AlbumArt'
 import Library from './components/Library'
 import Queue from './components/Queue'
+import Radio from './components/Radio'
 import PlayerBar from './components/PlayerBar'
 
 export default function App() {
@@ -30,6 +31,9 @@ export default function App() {
           </button>
           <button className={`topbar-link${view === 'queue' ? ' active' : ''}`} onClick={() => setView('queue')}>
             Queue
+          </button>
+          <button className={`topbar-link${view === 'radio' ? ' active' : ''}`} onClick={() => setView('radio')}>
+            Radio
           </button>
         </div>
 
@@ -57,7 +61,7 @@ export default function App() {
             </div>
           </section>
 
-          {view === 'library' ? <Library /> : <Queue />}
+          {view === 'library' ? <Library /> : view === 'queue' ? <Queue /> : <Radio />}
         </main>
       </div>
       <PlayerBar seekTo={seekTo} />

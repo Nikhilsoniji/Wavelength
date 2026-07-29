@@ -5,7 +5,7 @@ function format(seconds) {
   return `${m}:${String(s).padStart(2, '0')}`
 }
 
-export default function TapeCounter({ currentTime, duration }) {
+export default function TapeCounter({ currentTime, duration, isLive }) {
   return (
     <div
       style={{
@@ -19,7 +19,7 @@ export default function TapeCounter({ currentTime, duration }) {
       }}
     >
       <span style={{ color: 'var(--text-dim)' }}>{format(currentTime)}</span>
-      <span>{format(duration)}</span>
+      <span>{isLive ? 'LIVE' : format(duration)}</span>
     </div>
   )
 }

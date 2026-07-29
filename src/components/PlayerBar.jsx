@@ -42,7 +42,9 @@ export default function PlayerBar({ seekTo }) {
         <AlbumArt hue={track.hue} size={52} rounded={10} spinning={isPlaying} />
         <div className="player-trackmeta">
           <div className="player-title">{track.title}</div>
-          <div className="player-artist muted">{track.artist}</div>
+          <div className="player-artist muted">
+            {track.isLive ? 'Live radio station' : track.artist}
+          </div>
         </div>
       </div>
 
@@ -69,8 +71,8 @@ export default function PlayerBar({ seekTo }) {
           />
         </div>
         <div className="player-progress-row">
-          <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} onSeek={seekTo} />
-          <TapeCounter currentTime={currentTime} duration={duration} />
+          <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} isLive={track.isLive} onSeek={seekTo} />
+          <TapeCounter currentTime={currentTime} duration={duration} isLive={track.isLive} />
         </div>
       </div>
 
