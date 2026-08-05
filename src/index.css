@@ -1,25 +1,27 @@
 :root {
-  /* Premium theme tokens — deep, warm surfaces with a luminous accent */
-  --bg: #080508;
-  --surface: rgba(255,255,255,0.04);
-  --surface-2: rgba(255,255,255,0.06);
-  --border: rgba(255,255,255,0.08);
-  --accent: linear-gradient(90deg, #ff3f3f, #ff6a6a);
-  --accent-solid: #ff4d57;
-  --accent-soft: rgba(255,77,87,0.14);
-  --accent-strong: #ff4d57;
-  --text: #f7f6f4;
-  --text-dim: #c2b9b0;
-  --text-faint: #9e9290;
-  --danger: #ff6b6b;
+  /* Obsidian Sonic Glassmorphic Design System Tokens */
+  --bg: #0f0f12;
+  --surface: rgba(18, 19, 26, 0.75);
+  --surface-2: rgba(30, 31, 38, 0.85);
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: linear-gradient(135deg, #00f2ff 0%, #8b5cf6 100%);
+  --accent-solid: #00f2ff;
+  --accent-soft: rgba(0, 242, 255, 0.15);
+  --accent-strong: #00f2ff;
+  --accent-purple: #8b5cf6;
+  --accent-glow: 0 0 24px rgba(0, 242, 255, 0.45);
+  --text: #e2e1eb;
+  --text-dim: #b9cacb;
+  --text-faint: #849495;
+  --danger: #ffb4ab;
 
-  --font-display: 'Space Grotesk', Inter, system-ui, sans-serif;
-  --font-body: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Sora', 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
-  --radius: 14px;
-  --shadow-1: 0 8px 24px rgba(2,2,2,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
-  --glass-border: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  --radius: 16px;
+  --shadow-1: 0 12px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 * {
@@ -34,8 +36,8 @@ body,
 
 body {
   margin: 0;
-  background: radial-gradient(1200px 600px at 10% 10%, rgba(255,214,138,0.03), transparent 8%),
-    radial-gradient(900px 400px at 90% 90%, rgba(79,209,197,0.02), transparent 10%),
+  background: radial-gradient(1000px 500px at 15% 15%, rgba(0, 242, 255, 0.08), transparent 40%),
+    radial-gradient(900px 500px at 85% 85%, rgba(139, 92, 246, 0.08), transparent 45%),
     var(--bg);
   color: var(--text);
   font-family: var(--font-body);
