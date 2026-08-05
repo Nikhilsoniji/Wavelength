@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import TrackRow from './TrackRow'
 import SearchBar from './SearchBar'
+import { Disc3, Clock } from 'lucide-react'
 
 export default function Library() {
   const library = usePlayerStore((s) => s.library)
@@ -23,21 +24,33 @@ export default function Library() {
       <div className="library-header">
         <div>
           <h1>Library</h1>
-          <p className="muted">{library.length} tracks</p>
+          <p className="muted">{library.length} high-fidelity tracks</p>
         </div>
         <SearchBar />
       </div>
 
       {filtered.length === 0 ? (
-        <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>
-          Nothing matches “{searchQuery}.” Try a different title, artist, or album.
-        </p>
+        <div className="library-empty card">
+          <Disc3 size={38} className="empty-icon" />
+          <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>
+            Nothing matches “{searchQuery}.” Try a different title, artist, or album.
+          </p>
+        </div>
       ) : (
         <div className="library-panel card">
           <div className="library-toolbar">
-            <div className="library-subtitle">All songs</div>
+            <div className="library-subtitle">All Songs</div>
             <div className="library-count">{filtered.length} songs</div>
           </div>
+
+          {/* Futuristic Table Column Headers */}
+          <div className="track-table-header">
+            <div className="th-index">#</div>
+            <div className="th-title">TITLE</div>
+            <div className="th-album">ALBUM</div>
+            <div className="th-actions"><Clock size={13} /></div>
+          </div>
+
           <div className="track-list">
             {filtered.map((track, i) => (
               <div key={track.id} className="track-list-row">
