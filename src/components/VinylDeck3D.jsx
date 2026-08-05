@@ -193,13 +193,16 @@ export default function VinylDeck3D() {
     let targetRotationX = 0
     let targetRotationY = 0
 
-    const handleMouseMove = (e) => {
+    const handlePointerMove = (e) => {
       const rect = container.getBoundingClientRect()
-      mouseX = (e.clientX - rect.left) / rect.width - 0.5
-      mouseY = (e.clientY - rect.top) / rect.height - 0.5
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY
+      mouseX = (clientX - rect.left) / rect.width - 0.5
+      mouseY = (clientY - rect.top) / rect.height - 0.5
     }
 
-    container.addEventListener('mousemove', handleMouseMove)
+    container.addEventListener('mousemove', handlePointerMove)
+    container.addEventListener('touchmove', handlePointerMove, { passive: true })
 
     // 7. Animation Loop
     let reqId
@@ -265,7 +268,8 @@ export default function VinylDeck3D() {
 
     return () => {
       cancelAnimationFrame(reqId)
-      container.removeEventListener('mousemove', handleMouseMove)
+      container.removeEventListener('mousemove', handlePointerMove)
+      container.removeEventListener('touchmove', handlePointerMove)
       window.removeEventListener('resize', handleResize)
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement)

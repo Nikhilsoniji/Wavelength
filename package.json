@@ -19,5 +19,8 @@
     "three": "^0.185.1",
     "vite": "^5.4.1",
     "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "vercel": "^58.5.1"
   }
 }
