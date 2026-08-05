@@ -75,4 +75,129 @@ export const usePlayerStore = create((set, get) => ({
   },
 
   setSearchQuery: (q) => set({ searchQuery: q }),
-}))
+
+  // IndexedDB persistent storage actions
+  loadSavedTracks: async () => {
+    try {
+      const { getUploadedTracks } = await import('../utils/db')
+      const savedRecords = await getUploadedTracks()
+      if (!savedRecords || savedRecords.length === 0) return
+
+      const uploadedTracks = savedRecords.map((rec) => {
+        const { blob, ...meta } = rec
+        const src = URL.createObjectURL(blob)
+        return { ...meta, src, blobUrl: src, isUploaded: true }
+      })
+
+      const existingIds = new Set(uploadedTracks.map((t) => t.id))
+      const defaultTracks = tracks.filter((t) => !existingIds.has(t.id))
+      const combinedLibrary = [...uploadedTracks, ...defaultTracks]
+
+      set({
+        library: combinedLibrary,
+        queue: combinedLibrary.map((t) => t.id),
+      })
+    } catch (err) {
+      console.error('Failed to load saved tracks from IndexedDB:', err)
+    }
+  },
+
+  addUploadedTrack: async (file) => {
+    try {
+      const { saveUploadedTrack } = await import('../utils/db')
+      const id = 'user_track_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)
+      const title = file.name.replace(/\.[^/.]+$/, '') || 'Untitled Track'
+
+      // Get audio duration using HTML Audio element
+      const tempAudio = new Audio()
+      const objectUrl = URL.createObjectURL(file)
+      tempAudio.src = objectUrl
+
+      const duration = await new Promise((resolve) => {
+        tempAudio.onloadedmetadata = () => resolve(Math.round(tempAudio.duration) || 180)
+        tempAudio.onerror = () => resolve(180)
+      })
+
+      const trackMetadata = {
+        id,
+        title,
+        artist: 'My Uploads',
+        album: 'Local Storage',
+        duration,
+        hue: Math.floor(Math.random() * 360),
+        isUploaded: true,
+      }
+
+      await saveUploadedTrack(trackMetadata, file)
+
+      const newTrack = {
+        ...trackMetadata,
+        src: objectUrl,
+        blobUrl: objectUrl,
+      }
+
+      set((state) => {
+        const updatedLibrary = [newTrack, ...state.library]
+        return {
+          library: updatedLibrary,
+          queue: updatedLibrary.map((t) => t.id),
+          currentId: id,
+          isPlaying: true,
+          currentTime: 0,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to add uploaded track:', err)
+    }
+  },
+
+  deleteTrack: async (id) => {
+    try {
+      const { deleteUploadedTrack } = await import('../utils/db')
+      await deleteUploadedTrack(id)
+
+      set((state) => {
+        const target = state.library.find((t) => t.id === id)
+        if (target && target.blobUrl) {
+          URL.revokeObjectURL(target.blobUrl)
+        }
+
+        const updatedLibrary = state.library.filter((t) => t.id !== id)
+        const updatedQueue = state.queue.filter((qId) => qId !== id)
+        const nextCurrentId = state.currentId === id ? (updatedLibrary[0]?.id ?? null) : state.currentId
+
+        return {
+          library: updatedLibrary,
+          queue: updatedQueue,
+          currentId: nextCurrentId,
+          isPlaying: state.currentId === id ? false : state.isPlaying,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to delete track:', err)
+    }
+  },
+
+  loadRadioStations: async () => {
+    try {
+      const { fetchIndianRadioStations } = await import('../utils/api')
+      const fetchedStations = await fetchIndianRadioStations()
+      if (!fetchedStations || fetchedStations.length === 0) return
+
+      set((state) => {
+        const existingIds = new Set(state.library.map((t) => t.id))
+        const newStations = fetchedStations.filter((s) => !existingIds.has(s.id))
+        if (newStations.length === 0) return {}
+
+        const updatedLibrary = [...state.library, ...newStations]
+        return {
+          library: updatedLibrary,
+          queue: updatedLibrary.map((t) => t.id),
+        }
+      })
+    } catch (err) {
+      console.error('Failed to load radio stations:', err)
+    }
+  },
+})
+)

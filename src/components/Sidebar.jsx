@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { Library as LibraryIcon, ListMusic, Disc3, Radio } from 'lucide-react'
+import { Library as LibraryIcon, ListMusic, Disc3, Radio, Sparkles, Heart } from 'lucide-react'
 import Album from './Album'
 import { usePlayerStore } from '../store/usePlayerStore'
 
 const items = [
   { id: 'library', label: 'Library', Icon: LibraryIcon },
   { id: 'queue', label: 'Queue', Icon: ListMusic },
-  { id: 'radio', label: 'Radio', Icon: Radio },
+  { id: 'radio', label: 'Live Radio', Icon: Radio },
 ]
 
 export default function Sidebar({ view, setView }) {
@@ -27,8 +27,9 @@ export default function Sidebar({ view, setView }) {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <Disc3 size={22} color="var(--accent)" />
+        <Disc3 size={24} color="#ff4d57" className="spinning-logo" />
         <span className="sidebar-title">Wavelength</span>
+        <span className="sidebar-badge">PRO</span>
       </div>
 
       <nav className="nav-list">
@@ -42,14 +43,23 @@ export default function Sidebar({ view, setView }) {
               className={`nav-item${active ? ' active' : ''}`}
             >
               <Icon size={18} />
-              {label}
+              <span>{label}</span>
+              {active && <span className="nav-active-indicator" />}
             </button>
           )
         })}
       </nav>
 
+      <div className="sidebar-hifi-widget card">
+        <div className="hifi-widget-header">
+          <Sparkles size={14} color="#4fd1c5" />
+          <span>Spatial Audio Engine</span>
+        </div>
+        <p className="hifi-widget-text">24-Bit / 192kHz Master Audio Active</p>
+      </div>
+
       <div className="album-section">
-        <h3>Albums</h3>
+        <h3>Albums & Collections</h3>
         <div className="album-list">
           {albums.map((a) => (
             <div key={a.name} className="album-list-item">
