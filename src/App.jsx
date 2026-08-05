@@ -36,7 +36,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell perspective-container">
+    <div className="app-shell">
       {/* Interactive 3D Ambient WebGL Particles */}
       <Background3D />
 
@@ -81,7 +81,7 @@ export default function App() {
         <Sidebar view={view} setView={setView} />
         <main className="content">
           {/* 3D Interactive Hero Stage */}
-          <section className="hero-card card hero-3d-stage">
+          <section className="hero-card card hero-3d-stage perspective-container">
             <div className="hero-3d-wrapper">
               <VinylDeck3D />
             </div>

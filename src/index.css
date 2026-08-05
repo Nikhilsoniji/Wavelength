@@ -89,9 +89,7 @@ button:hover .row-play-overlay {
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100%;
   position: relative;
 }
 
@@ -99,13 +97,10 @@ button:hover .row-play-overlay {
   display: flex;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
 }
 
 .content {
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   padding: 28px 32px 140px;
 }
 
@@ -1303,8 +1298,9 @@ h1, h2, h3 {
    3D UI & Spatial Audio Design System
    ========================================================================== */
 .perspective-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
   position: relative;
-  overflow-x: hidden;
 }
 
 .glass-header {
