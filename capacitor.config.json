@@ -1,0 +1,19 @@
+{
+  "appId": "com.wavelength.music",
+  "appName": "Wavelength",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "ios": {
+    "contentInset": "always",
+    "allowsLinkPreview": false,
+    "backgroundColor": "#080508",
+    "preferredContentMode": "mobile"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#080508",
+      "showSpinner": false
+    }
+  }
+}

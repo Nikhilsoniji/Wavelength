@@ -1,0 +1,21 @@
+{
+  "short_name": "Wavelength",
+  "name": "Wavelength 3D Music Player",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192&h=192&fit=crop",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=512&h=512&fit=crop",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#080508",
+  "theme_color": "#080508",
+  "display": "standalone",
+  "orientation": "portrait"
+}
