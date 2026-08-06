@@ -3603,3 +3603,322 @@ h1, h2, h3 {
 .bottom-nav-icon { transition: transform 200ms ease; }
 .bottom-nav-item.active .bottom-nav-icon { transform: scale(1.1); }
 .bottom-nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+
+/* ================================================================
+   EXPANDED FULL-SCREEN MUSIC PLAYER POPUP
+   ================================================================ */
+
+.exp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  animation: exp-fade-in 250ms ease forwards;
+}
+@keyframes exp-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.exp-panel {
+  position: relative;
+  width: 100%;
+  max-height: 96dvh;
+  border-radius: 32px 32px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 24px 40px;
+  animation: exp-slide-up 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes exp-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.exp-bg-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.exp-header {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 12px;
+}
+.exp-header-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.exp-header-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(202, 190, 255, 0.8);
+  text-transform: uppercase;
+}
+.exp-header-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #c9c4d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease;
+}
+.exp-header-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+/* Large album art */
+.exp-art-wrapper {
+  position: relative;
+  z-index: 1;
+  margin: 8px 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.exp-art-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  filter: blur(60px);
+  z-index: 0;
+  animation: exp-glow-pulse 3s ease-in-out infinite;
+}
+@keyframes exp-glow-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+.exp-art-wrapper .album-art-3d {
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 32px 80px -16px rgba(0,0,0,0.8) !important;
+}
+
+/* Track row */
+.exp-track-row {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.exp-track-info { flex: 1; min-width: 0; }
+.exp-track-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.exp-track-artist {
+  font-size: 14px;
+  color: rgba(201,196,216,0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exp-like-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #c9c4d8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 200ms ease;
+}
+.exp-like-btn:hover { background: rgba(255,77,136,0.15); border-color: rgba(255,77,136,0.3); }
+.exp-like-btn.liked { color: #ff4d88; border-color: rgba(255,77,136,0.4); background: rgba(255,77,136,0.12); }
+
+/* Progress */
+.exp-progress-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin-bottom: 28px;
+}
+.exp-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(147,142,161,0.9);
+  letter-spacing: 0.03em;
+  margin-top: 6px;
+}
+
+/* Main controls */
+.exp-controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 32px;
+}
+.exp-ctrl-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(201,196,216,0.7);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 200ms ease, background 200ms ease, transform 200ms ease;
+}
+.exp-ctrl-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.exp-ctrl-btn.active { color: #cabeff; }
+.exp-ctrl-skip { color: #e5e1e4; }
+.exp-ctrl-skip:hover { transform: scale(1.1); background: none; }
+
+.exp-play-btn {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #cabeff, #937dff);
+  color: #1a0062;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 200ms ease;
+  box-shadow: 0 0 40px rgba(202,190,255,0.5), 0 8px 24px rgba(0,0,0,0.4);
+}
+.exp-play-btn:hover { transform: scale(1.06); }
+.exp-play-btn:active { transform: scale(0.96); }
+.exp-play-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(202,190,255,0.35);
+  animation: exp-ring-pulse 2.5s ease-in-out infinite;
+}
+@keyframes exp-ring-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.04); }
+}
+
+/* Volume + extras row */
+.exp-bottom-row {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.exp-volume-slider {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  accent-color: #cabeff;
+  cursor: pointer;
+  background: rgba(255,255,255,0.15);
+}
+.exp-extras {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Hi-Fi badge */
+.exp-hifi-badge {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(162,231,255,0.7);
+  text-transform: uppercase;
+}
+.exp-hifi-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a2e7ff;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ================================================================
+   MINI PLAYER BAR — PROGRESS FILL
+   ================================================================ */
+.spb-inner {
+  position: relative;
+  overflow: hidden;
+}
+.spb-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #937dff, #a2e7ff);
+  border-radius: 999px;
+  transition: width 500ms linear;
+  z-index: 10;
+}
+
+/* ================================================================
+   IMPROVED HOME — AI CARD INNER GRADIENTS
+   ================================================================ */
+.stitch-hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(147,125,255,0.15) 0%, transparent 60%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Improved bottom nav active indicator */
+.bottom-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #cabeff;
+}
+.bottom-nav-item { position: relative; }
+
+/* Glow pulse on playing state */
+.spb-play-btn {
+  box-shadow: 0 0 16px rgba(202,190,255,0.5) !important;
+}
