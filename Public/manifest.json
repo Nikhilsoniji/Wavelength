@@ -1,21 +1,18 @@
 {
-  "short_name": "Wavelength 3D",
-  "name": "Wavelength 3D — Spatial Audio Experience",
+  "short_name": "Wavelength",
+  "name": "Wavelength 3D — Spatial Audio",
+  "description": "Spatial audio music streaming and AI music experience",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192&h=192&fit=crop",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=512&h=512&fit=crop",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "background_color": "#0f0f12",
-  "theme_color": "#0f0f12",
+  "start_url": "/",
+  "background_color": "#09090B",
+  "theme_color": "#09090B",
   "display": "standalone",
   "orientation": "portrait"
 }

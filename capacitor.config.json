@@ -6,14 +6,29 @@
   "ios": {
     "contentInset": "always",
     "allowsLinkPreview": false,
-    "backgroundColor": "#080508",
+    "backgroundColor": "#09090B",
     "preferredContentMode": "mobile"
+  },
+  "android": {
+    "backgroundColor": "#09090B",
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#080508",
-      "showSpinner": false
+      "backgroundColor": "#09090B",
+      "showSpinner": false,
+      "androidSpinnerStyle": "small",
+      "spinnerColor": "#cabeff",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#09090B",
+      "overlaysWebView": true
     }
   }
 }
