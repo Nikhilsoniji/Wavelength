@@ -1,128 +1,108 @@
 import {
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Shuffle,
-  Repeat,
-  Repeat1,
-  Volume2,
-  Volume1,
-  VolumeX,
-  Download,
+  Play, Pause, SkipBack, SkipForward,
+  Volume2, Volume1, VolumeX, Download,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import AlbumArt from './AlbumArt'
 import WaveformSeek from './WaveformSeek'
-import TapeCounter from './TapeCounter'
+
+function fmt(s) {
+  if (!s || !Number.isFinite(s)) return '0:00'
+  const m = Math.floor(s / 60)
+  const sc = Math.floor(s % 60)
+  return `${m}:${String(sc).padStart(2, '0')}`
+}
 
 export default function PlayerBar({ seekTo }) {
-  const track = usePlayerStore((s) => s.currentTrack())
-  const isPlaying = usePlayerStore((s) => s.isPlaying)
-  const toggle = usePlayerStore((s) => s.toggle)
-  const next = usePlayerStore((s) => s.next)
-  const prev = usePlayerStore((s) => s.prev)
+  const track      = usePlayerStore((s) => s.currentTrack())
+  const isPlaying  = usePlayerStore((s) => s.isPlaying)
+  const toggle     = usePlayerStore((s) => s.toggle)
+  const next       = usePlayerStore((s) => s.next)
+  const prev       = usePlayerStore((s) => s.prev)
   const currentTime = usePlayerStore((s) => s.currentTime)
-  const duration = usePlayerStore((s) => s.duration)
-  const volume = usePlayerStore((s) => s.volume)
-  const muted = usePlayerStore((s) => s.muted)
-  const setVolume = usePlayerStore((s) => s.setVolume)
+  const duration   = usePlayerStore((s) => s.duration)
+  const volume     = usePlayerStore((s) => s.volume)
+  const muted      = usePlayerStore((s) => s.muted)
+  const setVolume  = usePlayerStore((s) => s.setVolume)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
-  const shuffle = usePlayerStore((s) => s.shuffle)
-  const toggleShuffle = usePlayerStore((s) => s.toggleShuffle)
-  const repeat = usePlayerStore((s) => s.repeat)
-  const cycleRepeat = usePlayerStore((s) => s.cycleRepeat)
 
   if (!track) return null
 
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2
 
   return (
-    <div className="player-bar-container">
-      <div className="player-bar">
-        <div className="player-left">
-          <AlbumArt hue={track.hue} size={52} rounded={12} spinning={isPlaying} />
-          <div className="player-trackmeta">
-            <div className="player-title" title={track.title}>
-              {track.title}
-              <span className="hifi-badge">24-BIT</span>
-              {isPlaying && (
-                <div className="player-equalizer-bars">
-                  <div className="visualizer-bar" />
-                  <div className="visualizer-bar" />
-                  <div className="visualizer-bar" />
-                  <div className="visualizer-bar" />
-                </div>
-              )}
-            </div>
-            <div className="player-artist muted">
-              {track.isLive ? 'Live Stream' : `${track.artist} • ${track.album}`}
-            </div>
+    <div className="stitch-player-bar">
+      <div className="spb-inner glass-card">
+        {/* Album art */}
+        <div className="spb-art">
+          <AlbumArt hue={track.hue} size={44} rounded={10} spinning={isPlaying} />
+        </div>
+
+        {/* Track info */}
+        <div className="spb-meta">
+          <div className="spb-title">{track.title}</div>
+          <div className="spb-artist">
+            {track.isLive ? 'Live Stream' : `${track.artist} • ${track.album}`}
           </div>
         </div>
 
-        <div className="player-center">
-          <div className="transport-controls">
-            <IconButton
-              label="Toggle shuffle"
-              active={shuffle}
-              onClick={toggleShuffle}
-              Icon={Shuffle}
-              size={18}
-            />
-            <IconButton label="Previous track" onClick={prev} Icon={SkipBack} size={20} />
-            <button className="play-circle" aria-label={isPlaying ? 'Pause' : 'Play'} onClick={toggle}>
-              {isPlaying ? <Pause size={20} fill="#ffffff" /> : <Play size={20} fill="#ffffff" />}
-            </button>
-            <IconButton label="Next track" onClick={next} Icon={SkipForward} size={20} />
-            <IconButton
-              label="Cycle repeat mode"
-              active={repeat !== 'off'}
-              onClick={cycleRepeat}
-              Icon={repeat === 'one' ? Repeat1 : Repeat}
-              size={18}
-            />
-          </div>
-          <div className="player-progress-row">
-            <WaveformSeek trackId={track.id} currentTime={currentTime} duration={duration} isLive={track.isLive} onSeek={seekTo} />
-            <TapeCounter currentTime={currentTime} duration={duration} isLive={track.isLive} />
+        {/* Progress */}
+        <div className="spb-progress">
+          <WaveformSeek
+            trackId={track.id}
+            currentTime={currentTime}
+            duration={duration}
+            isLive={track.isLive}
+            onSeek={seekTo}
+          />
+          <div className="spb-times">
+            <span>{fmt(currentTime)}</span>
+            <span>{track.isLive ? 'LIVE' : fmt(duration)}</span>
           </div>
         </div>
 
-        <div className="player-right">
+        {/* Controls */}
+        <div className="spb-controls">
+          <button className="spb-btn" aria-label="Previous" onClick={prev}>
+            <SkipBack size={18} />
+          </button>
+          <button className="spb-play-btn" aria-label={isPlaying ? 'Pause' : 'Play'} onClick={toggle}>
+            {isPlaying
+              ? <Pause size={20} fill="#fff" />
+              : <Play size={20} fill="#fff" />
+            }
+          </button>
+          <button className="spb-btn" aria-label="Next" onClick={next}>
+            <SkipForward size={18} />
+          </button>
+        </div>
+
+        {/* Volume + Download */}
+        <div className="spb-right">
           {track.src && (
             <a
-              className="icon-button muted"
+              className="spb-btn"
               href={track.src}
               download={track.title || 'track'}
-              title={`Download ${track.title}`}
-              aria-label="Download current track"
+              title="Download"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Download size={18} />
+              <Download size={16} />
             </a>
           )}
-          <button className="icon-button muted" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
-            <VolumeIcon size={18} />
+          <button className="spb-btn" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
+            <VolumeIcon size={16} />
           </button>
           <input
+            className="spb-volume"
             aria-label="Volume"
             type="range"
-            min={0}
-            max={1}
-            step={0.01}
+            min={0} max={1} step={0.01}
             value={muted ? 0 : volume}
             onChange={(e) => setVolume(Number(e.target.value))}
           />
         </div>
       </div>
     </div>
-  )
-}
-
-function IconButton({ label, onClick, Icon, size, active }) {
-  return (
-    <button aria-label={label} aria-pressed={active} onClick={onClick} className={`icon-button${active ? ' active' : ''}`}>
-      <Icon size={size} />
-    </button>
   )
 }

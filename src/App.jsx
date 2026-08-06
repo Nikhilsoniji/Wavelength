@@ -7,30 +7,66 @@ import Queue from './components/Queue'
 import Radio from './components/Radio'
 import AiDj from './components/AiDj'
 import PlayerBar from './components/PlayerBar'
-import VinylDeck3D from './components/VinylDeck3D'
 import Background3D from './components/Background3D'
 import OnboardingScreen from './components/OnboardingScreen'
 import AuthScreen from './components/AuthScreen'
-import OnboardingModal from './components/OnboardingModal'
-import AuthModal from './components/AuthModal'
 import LandingPage from './components/LandingPage'
-import { Play, Pause, Sparkles, User, HelpCircle, LogOut } from 'lucide-react'
+import { Sparkles, Search, Upload, Play, User } from 'lucide-react'
+
+const AI_CARDS = [
+  {
+    id: 'neon',
+    tag: 'Synthwave Focus',
+    title: 'Neon Horizons',
+    desc: 'A personalized journey through retro-futuristic soundscapes, mixed just for you.',
+    color: '#cabeff',
+    bg: 'linear-gradient(135deg, #1a0533 0%, #2d0a6b 40%, #0a1a3d 100%)',
+  },
+  {
+    id: 'midnight',
+    tag: 'Ambient Drift',
+    title: 'Midnight Rain',
+    desc: 'Deep textures and lo-fi beats designed to help you focus or fade away.',
+    color: '#a2e7ff',
+    bg: 'linear-gradient(135deg, #001a2c 0%, #003042 50%, #0a0a14 100%)',
+  },
+  {
+    id: 'solar',
+    tag: 'Deep Focus',
+    title: 'Solar Winds',
+    desc: 'Ambient electronic journeys that expand your mind across cosmic frequencies.',
+    color: '#cdbdff',
+    bg: 'linear-gradient(135deg, #0d0033 0%, #1a004d 50%, #000d1a 100%)',
+  },
+]
+
+const RECENT_TRACKS = [
+  { id: 'r1', title: 'Dark Matter',  artist: 'The Void',   hue: 260 },
+  { id: 'r2', title: 'Night Drive',  artist: 'Kavinsky',   hue: 200 },
+  { id: 'r3', title: 'Resonance',    artist: 'HOME',        hue: 180 },
+  { id: 'r4', title: 'Tape Loops',   artist: 'Lorn',        hue: 300 },
+]
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good Morning'
+  if (h < 17) return 'Good Afternoon'
+  return 'Good Evening'
+}
 
 export default function App() {
-  // Ordered Initial App Flow: 'onboarding' -> 'auth' -> 'main'
   const [flowStep, setFlowStep] = useState('onboarding')
-
   const [view, setView] = useState('library')
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false)
-
+  const [searchActive, setSearchActive] = useState(false)
   const { seekTo } = useAudioEngine()
-  const track = usePlayerStore((s) => s.currentTrack())
+  const track     = usePlayerStore((s) => s.currentTrack())
   const isPlaying = usePlayerStore((s) => s.isPlaying)
-  const toggle = usePlayerStore((s) => s.toggle)
-  const loadSavedTracks = usePlayerStore((s) => s.loadSavedTracks)
+  const toggle    = usePlayerStore((s) => s.toggle)
+  const play      = usePlayerStore((s) => s.play)
+  const loadSavedTracks   = usePlayerStore((s) => s.loadSavedTracks)
   const loadRadioStations = usePlayerStore((s) => s.loadRadioStations)
-  const addUploadedTrack = usePlayerStore((s) => s.addUploadedTrack)
+  const addUploadedTrack  = usePlayerStore((s) => s.addUploadedTrack)
+  const library = usePlayerStore((s) => s.library)
 
   const fileInputRef = useRef(null)
 
@@ -41,127 +77,151 @@ export default function App() {
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0]
-    if (file) {
-      addUploadedTrack(file)
-      e.target.value = ''
-    }
+    if (file) { addUploadedTrack(file); e.target.value = '' }
   }
 
-  // STEP 0: Landing Page (shown when Download App is clicked from onboarding)
-  if (flowStep === 'landing') {
-    return <LandingPage onBack={() => setFlowStep('onboarding')} />
-  }
+  // Flows
+  if (flowStep === 'landing')    return <LandingPage onBack={() => setFlowStep('onboarding')} />
+  if (flowStep === 'onboarding') return <OnboardingScreen onComplete={() => setFlowStep('auth')} onDownload={() => setFlowStep('landing')} />
+  if (flowStep === 'auth')       return <AuthScreen onComplete={() => setFlowStep('main')} />
 
-  // STEP 1: Fullscreen Onboarding Flow
-  if (flowStep === 'onboarding') {
-    return <OnboardingScreen onComplete={() => setFlowStep('auth')} onDownload={() => setFlowStep('landing')} />
-  }
+  // Recent tracks from library (last 4), fallback to demo
+  const recentTracks = library.length > 0
+    ? library.slice(-4).reverse()
+    : RECENT_TRACKS
 
-  // STEP 2: Fullscreen Authentication / Login Flow
-  if (flowStep === 'auth') {
-    return <AuthScreen onComplete={() => setFlowStep('main')} />
-  }
-
-  // STEP 3: Main Wavelength 3D Application
   return (
-    <div className="app-shell">
-      {/* Interactive 3D Ambient WebGL Particles */}
+    <div className="stitch-shell">
       <Background3D />
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileUpload}
-        accept="audio/*"
-        style={{ display: 'none' }}
-      />
-      
-      <header className="topbar glass-header">
-        <div className="topbar-brand">
-          <div className="topbar-logo badge-3d">W</div>
-          <div>
-            <div className="topbar-title">Wavelength 3D</div>
-            <div className="topbar-subtitle">Spatial Audio Experience</div>
-          </div>
-        </div>
+      <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="audio/*" style={{ display: 'none' }} />
 
-        <div className="topbar-links">
-          <button className={`topbar-link${view === 'library' ? ' active' : ''}`} onClick={() => setView('library')}>
-            Library
-          </button>
-          <button className={`topbar-link${view === 'aidj' ? ' active' : ''}`} onClick={() => setView('aidj')}>
-            <Sparkles size={14} style={{ display: 'inline', marginRight: 4 }} />
-            AI DJ
-          </button>
-          <button className={`topbar-link${view === 'queue' ? ' active' : ''}`} onClick={() => setView('queue')}>
-            Queue
-          </button>
-          <button className={`topbar-link${view === 'radio' ? ' active' : ''}`} onClick={() => setView('radio')}>
-            Radio
-          </button>
+      {/* Top Header */}
+      <header className="stitch-topbar glass-card">
+        <div className="stitch-topbar-brand">
+          <div className="stitch-logo">W</div>
+          <span className="stitch-topbar-title">{view === 'library' ? 'Home' : view === 'aidj' ? 'AI DJ' : view === 'queue' ? 'Library' : 'Radio'}</span>
         </div>
-
-        <div className="topbar-actions">
-          <button className="topbar-action glow-btn" onClick={() => setShowOnboardingModal(true)} title="Onboarding Tour">
-            <HelpCircle size={15} style={{ display: 'inline', marginRight: 4 }} />
-            Tour
+        <div className="stitch-topbar-actions">
+          <button className="stitch-topbar-btn" onClick={() => fileInputRef.current?.click()} title="Upload Track">
+            <Upload size={18} />
           </button>
-          <button className="topbar-action glow-btn" onClick={() => fileInputRef.current?.click()}>
-            Upload
-          </button>
-          <button className="topbar-action glow-btn" onClick={() => setShowAuthModal(true)}>
-            <User size={15} style={{ display: 'inline', marginRight: 4 }} />
-            Account
-          </button>
-          <button
-            className="topbar-action glow-btn restart-flow-btn"
-            onClick={() => setFlowStep('onboarding')}
-            title="Restart Flow from Onboarding"
-          >
-            <LogOut size={15} style={{ display: 'inline', marginRight: 4 }} />
-            Reset Flow
+          <button className="stitch-topbar-btn" onClick={() => setFlowStep('onboarding')} title="Account">
+            <User size={18} />
           </button>
         </div>
       </header>
 
-      <div className="workspace">
-        <Sidebar view={view} setView={setView} />
-        <main className="content">
-          {/* 3D Interactive Hero Stage */}
-          <section className="hero-card card hero-3d-stage perspective-container">
-            <div className="hero-3d-wrapper">
-              <VinylDeck3D />
+      {/* Main scrollable area */}
+      <main className="stitch-main">
+
+        {/* HOME VIEW */}
+        {view === 'library' && (
+          <div className="stitch-home">
+            {/* Greeting */}
+            <div className="stitch-greeting">
+              <h1 className="stitch-greeting-title">{getGreeting()}</h1>
+              <p className="stitch-greeting-sub">Here's your daily frequency.</p>
             </div>
 
-            <div className="hero-body-3d">
-              <div className="hero-label-3d">
-                <span className="live-pulse-dot" /> {isPlaying ? 'NOW PLAYING' : 'AUDIO DECK READY'}
-              </div>
-              <h2 className="hero-title-3d">{track ? track.title : 'Your Spatial Audio Studio'}</h2>
-              <p className="hero-subtitle-3d">
-                {track ? `${track.artist} • ${track.album}` : 'Select a track or live radio stream to spin in 3D.'}
-              </p>
-
-              <div className="hero-actions-3d">
-                <button className="hero-play-3d-btn" onClick={toggle}>
-                  {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
-                  <span>{isPlaying ? 'Pause Deck' : 'Play Deck'}</span>
-                </button>
-                <button className="hero-btn-outline-3d" onClick={() => setView('aidj')}>
-                  <Sparkles size={16} /> AI Studio Mode
-                </button>
-              </div>
+            {/* Search bar */}
+            <div className="stitch-search-bar glass-card">
+              <Search size={18} className="stitch-search-icon" />
+              <input
+                className="stitch-search-input"
+                placeholder="What are you looking for?"
+                type="text"
+                onFocus={() => setSearchActive(true)}
+                onBlur={() => setSearchActive(false)}
+              />
             </div>
-          </section>
 
-          {view === 'library' ? <Library /> : view === 'aidj' ? <AiDj /> : view === 'queue' ? <Queue /> : <Radio />}
-        </main>
-      </div>
+            {/* AI Recommended */}
+            <section className="stitch-section">
+              <div className="stitch-section-header">
+                <h2 className="stitch-section-title">
+                  <Sparkles size={18} className="stitch-section-icon" />
+                  AI Recommended
+                </h2>
+              </div>
+              <div className="stitch-cards-scroll">
+                {AI_CARDS.map((card) => (
+                  <div key={card.id} className="stitch-hero-card" style={{ background: card.bg }}>
+                    <div className="stitch-hero-card-overlay" />
+                    <div className="stitch-hero-card-ring" />
+                    <div className="stitch-hero-card-body">
+                      <div className="stitch-hero-tag">
+                        <span className="stitch-pulse-dot" style={{ background: card.color }} />
+                        <span style={{ color: card.color }}>{card.tag}</span>
+                      </div>
+                      <h3 className="stitch-hero-title">{card.title}</h3>
+                      <p className="stitch-hero-desc">{card.desc}</p>
+                      <div className="stitch-hero-footer">
+                        <div className="stitch-avatar-stack">
+                          {[0,1,2].map(i => (
+                            <div key={i} className="stitch-avatar" style={{ background: `hsl(${200 + i*40},70%,55%)` }}>
+                              {String.fromCharCode(65 + i)}
+                            </div>
+                          ))}
+                        </div>
+                        <button className="stitch-hero-play" style={{ boxShadow: `0 0 20px ${card.color}66` }}>
+                          <Play size={20} fill="#fff" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Recently Played */}
+            <section className="stitch-section">
+              <div className="stitch-section-header">
+                <h2 className="stitch-section-title">Recently Played</h2>
+                <button className="stitch-see-all" onClick={() => setView('queue')}>See All</button>
+              </div>
+              <div className="stitch-small-cards-scroll">
+                {recentTracks.map((t) => (
+                  <div key={t.id} className="stitch-small-card" onClick={() => play && play(t.id)}>
+                    <div className="stitch-small-art" style={{ background: `linear-gradient(135deg, hsl(${t.hue},70%,35%), hsl(${(t.hue+60)%360},70%,25%))` }}>
+                      <div className="stitch-small-art-overlay">
+                        <button className="stitch-small-play">
+                          <Play size={16} fill="#fff" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="stitch-small-info">
+                      <div className="stitch-small-title">{t.title}</div>
+                      <div className="stitch-small-artist">{t.artist}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Library quick access */}
+            <section className="stitch-section stitch-section-last">
+              <div className="stitch-section-header">
+                <h2 className="stitch-section-title">Your Library</h2>
+                <button className="stitch-see-all" onClick={() => setView('queue')}>See All</button>
+              </div>
+              <Library compact />
+            </section>
+          </div>
+        )}
+
+        {/* OTHER VIEWS */}
+        {view === 'search'  && <div className="stitch-view-page"><Library /></div>}
+        {view === 'queue'   && <div className="stitch-view-page"><Queue /></div>}
+        {view === 'aidj'    && <div className="stitch-view-page"><AiDj /></div>}
+        {view === 'radio'   && <div className="stitch-view-page"><Radio /></div>}
+      </main>
+
+      {/* Floating Player */}
       <PlayerBar seekTo={seekTo} />
 
-      {/* Stitch Design System Modals */}
-      <OnboardingModal isOpen={showOnboardingModal} onClose={() => setShowOnboardingModal(false)} />
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
+      {/* Bottom Nav */}
+      <Sidebar view={view} setView={setView} />
     </div>
   )
 }

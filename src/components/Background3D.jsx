@@ -1,99 +1,101 @@
 import { useEffect, useRef } from 'react'
-import * as THREE from 'three'
 import { usePlayerStore } from '../store/usePlayerStore'
 
+// Stitch ANIMATION_12 WebGL Shader — cyan-to-purple sine wave overlay
 export default function Background3D() {
   const canvasRef = useRef(null)
   const isPlaying = usePlayerStore((s) => s.isPlaying)
-  const track = usePlayerStore((s) => s.currentTrack())
-
   const isPlayingRef = useRef(isPlaying)
-  const hueRef = useRef(track?.hue ?? 280)
 
-  useEffect(() => {
-    isPlayingRef.current = isPlaying
-  }, [isPlaying])
-
-  useEffect(() => {
-    hueRef.current = track?.hue ?? 280
-  }, [track])
+  useEffect(() => { isPlayingRef.current = isPlaying }, [isPlaying])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000)
-    camera.position.z = 30
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
-    renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5))
-
-    // Particle Grid
-    const count = 400
-    const geometry = new THREE.BufferGeometry()
-    const positions = new Float32Array(count * 3)
-    const originalY = new Float32Array(count)
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 80
-      const y = (Math.random() - 0.5) * 60
-      positions[i * 3 + 1] = y
-      originalY[i] = y
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 40
-    }
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-
-    const material = new THREE.PointsMaterial({
-      size: 1.2,
-      color: new THREE.Color(`hsl(${hueRef.current}, 70%, 60%)`),
-      transparent: true,
-      opacity: 0.35,
-      blending: THREE.AdditiveBlending,
-    })
-
-    const points = new THREE.Points(geometry, material)
-    scene.add(points)
-
-    let reqId
-    let clock = new THREE.Clock()
-
-    const animate = () => {
-      reqId = requestAnimationFrame(animate)
-      const time = clock.getElapsedTime()
-
-      // Smooth color transition
-      material.color.lerp(new THREE.Color(`hsl(${hueRef.current}, 75%, 60%)`), 0.03)
-
-      const speed = isPlayingRef.current ? 0.8 : 0.2
-      points.rotation.y = time * 0.05 * speed
-      points.rotation.x = Math.sin(time * 0.03) * 0.1
-
-      const pos = geometry.attributes.position.array
-      for (let i = 0; i < count; i++) {
-        pos[i * 3 + 1] = originalY[i] + Math.sin(time * speed * 2 + i) * 1.5
+    function syncSize() {
+      const w = canvas.clientWidth || window.innerWidth
+      const h = canvas.clientHeight || window.innerHeight
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w
+        canvas.height = h
       }
-      geometry.attributes.position.needsUpdate = true
+    }
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver(syncSize)
+      ro.observe(canvas)
+    }
+    syncSize()
 
-      renderer.render(scene, camera)
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
+    if (!gl) return
+
+    const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`
+    const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+void main() {
+    vec2 uv = v_texCoord;
+    float speed = 2.0;
+    float wave = sin(uv.x * 10.0 + u_time * speed) * 0.08;
+    float wave2 = sin(uv.x * 6.0 - u_time * speed * 0.7 + 1.5) * 0.05;
+    float line = smoothstep(0.018, 0.0, abs(uv.y - 0.5 - wave));
+    float line2 = smoothstep(0.012, 0.0, abs(uv.y - 0.5 - wave2)) * 0.5;
+    vec3 cyan = vec3(0.0, 0.83, 1.0);
+    vec3 purple = vec3(0.48, 0.36, 1.0);
+    vec3 color = mix(cyan, purple, uv.x);
+    float alpha = (line + line2) * 0.65;
+    gl_FragColor = vec4(color * (line + line2), alpha);
+}`
+
+    function cs(type, src) {
+      const s = gl.createShader(type)
+      gl.shaderSource(s, src)
+      gl.compileShader(s)
+      return s
     }
 
-    animate()
+    const prog = gl.createProgram()
+    gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs))
+    gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs))
+    gl.linkProgram(prog)
+    gl.useProgram(prog)
 
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight
-      camera.updateProjectionMatrix()
-      renderer.setSize(window.innerWidth, window.innerHeight)
+    const buf = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW)
+
+    const pos = gl.getAttribLocation(prog, 'a_position')
+    gl.enableVertexAttribArray(pos)
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0)
+
+    const uTime = gl.getUniformLocation(prog, 'u_time')
+    const uRes = gl.getUniformLocation(prog, 'u_resolution')
+
+    gl.enable(gl.BLEND)
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE)
+
+    let animId
+    function render(t) {
+      if (typeof ResizeObserver === 'undefined') syncSize()
+      gl.viewport(0, 0, canvas.width, canvas.height)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      if (uTime) gl.uniform1f(uTime, t * 0.001)
+      if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      animId = requestAnimationFrame(render)
     }
-
-    window.addEventListener('resize', handleResize)
+    render(0)
 
     return () => {
-      cancelAnimationFrame(reqId)
-      window.removeEventListener('resize', handleResize)
-      renderer.dispose()
+      cancelAnimationFrame(animId)
+      gl.deleteProgram(prog)
     }
   }, [])
 
@@ -103,8 +105,12 @@ export default function Background3D() {
       style={{
         position: 'fixed',
         inset: 0,
+        width: '100%',
+        height: '100%',
         pointerEvents: 'none',
         zIndex: 0,
+        opacity: 0.5,
+        mixBlendMode: 'screen',
       }}
     />
   )
