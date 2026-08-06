@@ -1,6 +1,6 @@
 {
-  "short_name": "Wavelength",
-  "name": "Wavelength 3D Music Player",
+  "short_name": "Wavelength 3D",
+  "name": "Wavelength 3D — Spatial Audio Experience",
   "icons": [
     {
       "src": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=192&h=192&fit=crop",
@@ -14,8 +14,8 @@
     }
   ],
   "start_url": ".",
-  "background_color": "#080508",
-  "theme_color": "#080508",
+  "background_color": "#0f0f12",
+  "theme_color": "#0f0f12",
   "display": "standalone",
   "orientation": "portrait"
 }

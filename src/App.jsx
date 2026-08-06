@@ -5,13 +5,24 @@ import Sidebar from './components/Sidebar'
 import Library from './components/Library'
 import Queue from './components/Queue'
 import Radio from './components/Radio'
+import AiDj from './components/AiDj'
 import PlayerBar from './components/PlayerBar'
 import VinylDeck3D from './components/VinylDeck3D'
 import Background3D from './components/Background3D'
-import { Play, Pause } from 'lucide-react'
+import OnboardingScreen from './components/OnboardingScreen'
+import AuthScreen from './components/AuthScreen'
+import OnboardingModal from './components/OnboardingModal'
+import AuthModal from './components/AuthModal'
+import { Play, Pause, Sparkles, User, HelpCircle, LogOut } from 'lucide-react'
 
 export default function App() {
+  // Ordered Initial App Flow: 'onboarding' -> 'auth' -> 'main'
+  const [flowStep, setFlowStep] = useState('onboarding')
+
   const [view, setView] = useState('library')
+  const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false)
+
   const { seekTo } = useAudioEngine()
   const track = usePlayerStore((s) => s.currentTrack())
   const isPlaying = usePlayerStore((s) => s.isPlaying)
@@ -35,6 +46,17 @@ export default function App() {
     }
   }
 
+  // STEP 1: Fullscreen Onboarding Flow
+  if (flowStep === 'onboarding') {
+    return <OnboardingScreen onComplete={() => setFlowStep('auth')} />
+  }
+
+  // STEP 2: Fullscreen Authentication / Login Flow
+  if (flowStep === 'auth') {
+    return <AuthScreen onComplete={() => setFlowStep('main')} />
+  }
+
+  // STEP 3: Main Wavelength 3D Application
   return (
     <div className="app-shell">
       {/* Interactive 3D Ambient WebGL Particles */}
@@ -61,6 +83,10 @@ export default function App() {
           <button className={`topbar-link${view === 'library' ? ' active' : ''}`} onClick={() => setView('library')}>
             Library
           </button>
+          <button className={`topbar-link${view === 'aidj' ? ' active' : ''}`} onClick={() => setView('aidj')}>
+            <Sparkles size={14} style={{ display: 'inline', marginRight: 4 }} />
+            AI DJ
+          </button>
           <button className={`topbar-link${view === 'queue' ? ' active' : ''}`} onClick={() => setView('queue')}>
             Queue
           </button>
@@ -70,10 +96,25 @@ export default function App() {
         </div>
 
         <div className="topbar-actions">
+          <button className="topbar-action glow-btn" onClick={() => setShowOnboardingModal(true)} title="Onboarding Tour">
+            <HelpCircle size={15} style={{ display: 'inline', marginRight: 4 }} />
+            Tour
+          </button>
           <button className="topbar-action glow-btn" onClick={() => fileInputRef.current?.click()}>
             Upload
           </button>
-          <button className="topbar-action glow-btn">Profile</button>
+          <button className="topbar-action glow-btn" onClick={() => setShowAuthModal(true)}>
+            <User size={15} style={{ display: 'inline', marginRight: 4 }} />
+            Account
+          </button>
+          <button
+            className="topbar-action glow-btn restart-flow-btn"
+            onClick={() => setFlowStep('onboarding')}
+            title="Restart Flow from Onboarding"
+          >
+            <LogOut size={15} style={{ display: 'inline', marginRight: 4 }} />
+            Reset Flow
+          </button>
         </div>
       </header>
 
@@ -100,15 +141,21 @@ export default function App() {
                   {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
                   <span>{isPlaying ? 'Pause Deck' : 'Play Deck'}</span>
                 </button>
-                <button className="hero-btn-outline-3d">3D Studio Mode</button>
+                <button className="hero-btn-outline-3d" onClick={() => setView('aidj')}>
+                  <Sparkles size={16} /> AI Studio Mode
+                </button>
               </div>
             </div>
           </section>
 
-          {view === 'library' ? <Library /> : view === 'queue' ? <Queue /> : <Radio />}
+          {view === 'library' ? <Library /> : view === 'aidj' ? <AiDj /> : view === 'queue' ? <Queue /> : <Radio />}
         </main>
       </div>
       <PlayerBar seekTo={seekTo} />
+
+      {/* Stitch Design System Modals */}
+      <OnboardingModal isOpen={showOnboardingModal} onClose={() => setShowOnboardingModal(false)} />
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   )
 }

@@ -45,6 +45,14 @@ export default function PlayerBar({ seekTo }) {
             <div className="player-title" title={track.title}>
               {track.title}
               <span className="hifi-badge">24-BIT</span>
+              {isPlaying && (
+                <div className="player-equalizer-bars">
+                  <div className="visualizer-bar" />
+                  <div className="visualizer-bar" />
+                  <div className="visualizer-bar" />
+                  <div className="visualizer-bar" />
+                </div>
+              )}
             </div>
             <div className="player-artist muted">
               {track.isLive ? 'Live Stream' : `${track.artist} • ${track.album}`}

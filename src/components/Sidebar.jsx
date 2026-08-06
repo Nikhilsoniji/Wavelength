@@ -5,6 +5,7 @@ import { usePlayerStore } from '../store/usePlayerStore'
 
 const items = [
   { id: 'library', label: 'Library', Icon: LibraryIcon },
+  { id: 'aidj', label: 'AI DJ', Icon: Sparkles },
   { id: 'queue', label: 'Queue', Icon: ListMusic },
   { id: 'radio', label: 'Live Radio', Icon: Radio },
 ]
