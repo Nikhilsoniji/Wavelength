@@ -13,6 +13,7 @@ import OnboardingScreen from './components/OnboardingScreen'
 import AuthScreen from './components/AuthScreen'
 import OnboardingModal from './components/OnboardingModal'
 import AuthModal from './components/AuthModal'
+import LandingPage from './components/LandingPage'
 import { Play, Pause, Sparkles, User, HelpCircle, LogOut } from 'lucide-react'
 
 export default function App() {
@@ -46,9 +47,14 @@ export default function App() {
     }
   }
 
+  // STEP 0: Landing Page (shown when Download App is clicked from onboarding)
+  if (flowStep === 'landing') {
+    return <LandingPage onBack={() => setFlowStep('onboarding')} />
+  }
+
   // STEP 1: Fullscreen Onboarding Flow
   if (flowStep === 'onboarding') {
-    return <OnboardingScreen onComplete={() => setFlowStep('auth')} />
+    return <OnboardingScreen onComplete={() => setFlowStep('auth')} onDownload={() => setFlowStep('landing')} />
   }
 
   // STEP 2: Fullscreen Authentication / Login Flow

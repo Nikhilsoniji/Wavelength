@@ -9,6 +9,7 @@ import {
   Volume2,
   Volume1,
   VolumeX,
+  Download,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import AlbumArt from './AlbumArt'
@@ -89,6 +90,17 @@ export default function PlayerBar({ seekTo }) {
         </div>
 
         <div className="player-right">
+          {track.src && (
+            <a
+              className="icon-button muted"
+              href={track.src}
+              download={track.title || 'track'}
+              title={`Download ${track.title}`}
+              aria-label="Download current track"
+            >
+              <Download size={18} />
+            </a>
+          )}
           <button className="icon-button muted" aria-label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
             <VolumeIcon size={18} />
           </button>

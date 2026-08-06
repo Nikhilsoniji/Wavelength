@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Sparkles, Disc, WifiOff, ArrowRight } from 'lucide-react'
+import { Sparkles, Disc, WifiOff, ArrowRight, Download } from 'lucide-react'
 
-export default function OnboardingScreen({ onComplete }) {
+export default function OnboardingScreen({ onComplete, onDownload }) {
   const [slide, setSlide] = useState(0)
 
   const totalSlides = 3
@@ -113,6 +113,11 @@ export default function OnboardingScreen({ onComplete }) {
                 Skip to Login
               </button>
             )}
+
+            <button className="flow-download-btn" onClick={onDownload}>
+              <Download size={16} />
+              <span>Download App</span>
+            </button>
           </div>
         </div>
       </div>

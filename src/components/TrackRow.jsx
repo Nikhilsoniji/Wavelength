@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Play, Pause, Trash2, Heart } from 'lucide-react'
+import { Play, Pause, Trash2, Heart, Download } from 'lucide-react'
 import AlbumArt from './AlbumArt'
 import { usePlayerStore } from '../store/usePlayerStore'
 
@@ -87,6 +87,18 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
         >
           <Heart size={15} fill={liked ? '#ff4d57' : 'none'} color={liked ? '#ff4d57' : 'currentColor'} />
         </button>
+
+        {track.src && (
+          <a
+            className="track-action-btn"
+            href={track.src}
+            download={track.title || 'track'}
+            title="Download track"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Download size={15} />
+          </a>
+        )}
 
         <div className="track-duration">{track.isLive ? 'Live' : formatDuration(track.duration)}</div>
 
