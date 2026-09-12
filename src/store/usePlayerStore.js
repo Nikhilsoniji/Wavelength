@@ -19,6 +19,7 @@ export const usePlayerStore = create((set, get) => ({
   shuffle: false,
   repeat: 'off', // 'off' | 'all' | 'one'
   searchQuery: '',
+  savedPlaylists: [],
 
   currentTrack: () => {
     const { library, currentId } = get()
@@ -83,15 +84,21 @@ export const usePlayerStore = create((set, get) => ({
       const savedRecords = await getUploadedTracks()
       if (!savedRecords || savedRecords.length === 0) return
 
-      const uploadedTracks = savedRecords.map((rec) => {
-        const { blob, ...meta } = rec
-        const src = URL.createObjectURL(blob)
-        return { ...meta, src, blobUrl: src, isUploaded: true }
+      const parsedTracks = savedRecords.map((rec) => {
+        if (rec.isYouTube) {
+          return { ...rec }
+        }
+        if (rec.blob) {
+          const { blob, ...meta } = rec
+          const src = URL.createObjectURL(blob)
+          return { ...meta, src, blobUrl: src, isUploaded: true }
+        }
+        return rec
       })
 
-      const existingIds = new Set(uploadedTracks.map((t) => t.id))
+      const existingIds = new Set(parsedTracks.map((t) => t.id))
       const defaultTracks = tracks.filter((t) => !existingIds.has(t.id))
-      const combinedLibrary = [...uploadedTracks, ...defaultTracks]
+      const combinedLibrary = [...parsedTracks, ...defaultTracks]
 
       set({
         library: combinedLibrary,
@@ -100,6 +107,165 @@ export const usePlayerStore = create((set, get) => ({
     } catch (err) {
       console.error('Failed to load saved tracks from IndexedDB:', err)
     }
+  },
+
+  loadSavedPlaylists: async () => {
+    try {
+      const { getSavedPlaylists } = await import('../utils/db')
+      const playlists = await getSavedPlaylists()
+      if (!playlists || !Array.isArray(playlists)) return
+
+      const allPlaylistTracks = []
+      playlists.forEach((pl) => {
+        if (Array.isArray(pl.tracks)) {
+          allPlaylistTracks.push(...pl.tracks)
+        }
+      })
+
+      set((state) => {
+        const existingIds = new Set(state.library.map((t) => t.id))
+        const newTracks = allPlaylistTracks.filter((t) => !existingIds.has(t.id))
+        const updatedLibrary = newTracks.length > 0 ? [...newTracks, ...state.library] : state.library
+
+        return {
+          savedPlaylists: playlists,
+          library: updatedLibrary,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to load saved playlists:', err)
+    }
+  },
+
+  savePlaylist: async (playlist) => {
+    try {
+      const { savePlaylistRecord, saveYouTubeTracks } = await import('../utils/db')
+      await savePlaylistRecord(playlist)
+      if (playlist.tracks && playlist.tracks.length > 0) {
+        await saveYouTubeTracks(playlist.tracks)
+      }
+
+      set((state) => {
+        const existing = state.savedPlaylists.filter((p) => p.id !== playlist.id)
+        const updatedPlaylists = [playlist, ...existing]
+
+        const existingIds = new Set(state.library.map((t) => t.id))
+        const newTracks = (playlist.tracks || []).filter((t) => !existingIds.has(t.id))
+        const updatedLibrary = newTracks.length > 0 ? [...newTracks, ...state.library] : state.library
+
+        return {
+          savedPlaylists: updatedPlaylists,
+          library: updatedLibrary,
+        }
+      })
+    } catch (err) {
+      console.error('Failed to save playlist:', err)
+    }
+  },
+
+  playPlaylist: (playlistOrId, startTrackIndex = 0) => {
+    const { savedPlaylists, library } = get()
+    const targetPlaylist = typeof playlistOrId === 'object'
+      ? playlistOrId
+      : savedPlaylists.find((p) => p.id === playlistOrId || p.playlistId === playlistOrId)
+
+    if (!targetPlaylist || !Array.isArray(targetPlaylist.tracks) || targetPlaylist.tracks.length === 0) {
+      console.warn('Playlist not found or has no tracks:', playlistOrId)
+      return
+    }
+
+    const playlistTracks = targetPlaylist.tracks
+    const existingIds = new Set(library.map((t) => t.id))
+    const missingTracks = playlistTracks.filter((t) => !existingIds.has(t.id))
+    const updatedLibrary = missingTracks.length > 0 ? [...missingTracks, ...library] : library
+
+    const queue = playlistTracks.map((t) => t.id)
+    const startTrack = playlistTracks[startTrackIndex] || playlistTracks[0]
+
+    set({
+      library: updatedLibrary,
+      queue,
+      currentId: startTrack.id,
+      isPlaying: true,
+      currentTime: 0,
+    })
+  },
+
+  deletePlaylist: async (playlistId) => {
+    try {
+      const { deletePlaylistRecord } = await import('../utils/db')
+      await deletePlaylistRecord(playlistId)
+
+      set((state) => ({
+        savedPlaylists: state.savedPlaylists.filter((p) => p.id !== playlistId && p.playlistId !== playlistId),
+      }))
+    } catch (err) {
+      console.error('Failed to delete playlist:', err)
+    }
+  },
+
+  importYouTubePlaylist: async (urlOrId, autoPlay = true) => {
+    const { fetchYouTubePlaylist } = await import('../utils/youtube')
+    const { saveYouTubeTracks, savePlaylistRecord } = await import('../utils/db')
+
+    const result = await fetchYouTubePlaylist(urlOrId)
+    if (!result || !result.tracks || result.tracks.length === 0) {
+      throw new Error('No tracks found in this playlist.')
+    }
+
+    const playlistEntity = {
+      id: result.id || `yt_pl_${result.playlistId || Date.now()}`,
+      playlistId: result.playlistId || '',
+      title: result.title || 'YouTube Playlist',
+      author: result.author || 'YouTube',
+      thumbnail: result.thumbnail || result.tracks[0]?.thumbnail || '',
+      trackCount: result.tracks.length,
+      tracks: result.tracks,
+      savedAt: Date.now(),
+      url: typeof urlOrId === 'string' ? urlOrId : '',
+      isYouTube: true,
+    }
+
+    // Save tracks & playlist to IndexedDB + localStorage forever
+    await saveYouTubeTracks(result.tracks)
+    await savePlaylistRecord(playlistEntity)
+
+    set((state) => {
+      const existingIds = new Set(state.library.map((t) => t.id))
+      const newTracks = result.tracks.filter((t) => !existingIds.has(t.id))
+
+      const existingPlaylists = state.savedPlaylists.filter((p) => p.id !== playlistEntity.id)
+      const updatedPlaylists = [playlistEntity, ...existingPlaylists]
+
+      if (newTracks.length === 0) {
+        if (autoPlay && result.tracks[0]) {
+          return {
+            savedPlaylists: updatedPlaylists,
+            queue: result.tracks.map((t) => t.id),
+            currentId: result.tracks[0].id,
+            isPlaying: true,
+            currentTime: 0,
+          }
+        }
+        return {
+          savedPlaylists: updatedPlaylists,
+        }
+      }
+
+      const updatedLibrary = [...newTracks, ...state.library]
+      const firstId = newTracks[0]?.id || state.currentId
+
+      return {
+        savedPlaylists: updatedPlaylists,
+        library: updatedLibrary,
+        queue: autoPlay ? result.tracks.map((t) => t.id) : updatedLibrary.map((t) => t.id),
+        currentId: autoPlay ? firstId : state.currentId,
+        isPlaying: autoPlay ? true : state.isPlaying,
+        currentTime: autoPlay ? 0 : state.currentTime,
+      }
+    })
+
+    return result
   },
 
   addUploadedTrack: async (file) => {

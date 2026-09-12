@@ -2,9 +2,6 @@ import { useMemo } from 'react'
 import { waveformFor } from '../data/tracks'
 
 export default function WaveformSeek({ trackId, currentTime, duration, isLive, onSeek }) {
-  // Recomputed per track (not cached across track changes) so the "waveform"
-  // shown always matches the track actually loaded.
-  const bars = useMemo(() => (trackId ? waveformFor(trackId) : []), [trackId])
   const hasSeekableDuration = Number.isFinite(duration) && duration > 0
   const progress = hasSeekableDuration ? currentTime / duration : 0
 
@@ -23,14 +20,14 @@ export default function WaveformSeek({ trackId, currentTime, duration, isLive, o
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 38,
-          color: 'var(--text-dim)',
-          background: 'rgba(255,255,255,0.04)',
+          color: 'var(--text-tertiary)',
+          background: 'var(--bg-elevated)',
           borderRadius: 8,
           padding: '8px 12px',
           fontSize: 13,
         }}
       >
-        {isLive ? 'Live stream — seeking is unavailable' : 'No seek data available'}
+        {isLive ? 'Live stream' : 'No seek data available'}
       </div>
     )
   }
@@ -49,30 +46,26 @@ export default function WaveformSeek({ trackId, currentTime, duration, isLive, o
         if (e.key === 'ArrowLeft') onSeek(Math.max(0, currentTime - 5))
       }}
       style={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: 2,
-        height: 32,
+        position: 'relative',
+        height: 4,
+        borderRadius: 2,
+        background: 'var(--bg-active)',
         cursor: 'pointer',
-        padding: '4px 0',
+        overflow: 'hidden',
       }}
     >
-      {bars.map((h, i) => {
-        const played = i / bars.length < progress
-        return (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              height: `${Math.round(h * 100)}%`,
-              minHeight: 2,
-              borderRadius: 1,
-              background: played ? 'var(--accent)' : 'var(--border)',
-              transition: 'background 80ms linear',
-            }}
-          />
-        )
-      })}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: `${Math.round(progress * 100)}%`,
+          background: 'var(--accent)',
+          borderRadius: 2,
+          transition: 'width 200ms linear',
+        }}
+      />
     </div>
   )
 }

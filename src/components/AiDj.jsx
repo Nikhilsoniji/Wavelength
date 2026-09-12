@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
-import { Sparkles, Play, Pause, Radio, Music, Flame, Zap, Disc } from 'lucide-react'
+import { Sparkles, Play, Pause, Disc, Cpu } from 'lucide-react'
+
+const MOOD_FILTERS = ['All', 'Deep Focus', 'Synthwave', 'Ambient Lo-Fi', 'Night Drive', 'Spatial 3D']
 
 export default function AiDj() {
   const library = usePlayerStore((s) => s.library)
@@ -7,6 +10,8 @@ export default function AiDj() {
   const currentId = usePlayerStore((s) => s.currentId)
   const play = usePlayerStore((s) => s.play)
   const toggle = usePlayerStore((s) => s.toggle)
+
+  const [activeMood, setActiveMood] = useState('All')
 
   const handlePlayCard = (trackId) => {
     if (currentId === trackId) {
@@ -23,22 +28,38 @@ export default function AiDj() {
     <div className="aidj-container">
       {/* Daily Frequency Greeting */}
       <div className="aidj-greeting">
-        <div className="greeting-badge">
-          <Sparkles size={16} className="sparkle-pulse" />
-          <span>STITCH AI MUSIC ENGINE</span>
+        <div className="aidj-greeting-inner">
+          <div className="greeting-badge">
+            <Sparkles size={16} className="sparkle-pulse" />
+            <span>AI DISCOVERY</span>
+          </div>
+          <h1 className="greeting-title">AI DJ & Mixes</h1>
+          <p className="greeting-subtitle">
+            Curated soundscapes that dynamically adapt to your focus state and listening habits.
+          </p>
         </div>
-        <h1 className="greeting-title">Good Morning</h1>
-        <p className="greeting-subtitle">Here is your daily frequency and personalized AI mix.</p>
+      </div>
+
+      {/* Mood Selector Pills */}
+      <div className="aidj-mood-pills">
+        {MOOD_FILTERS.map((mood) => (
+          <button
+            key={mood}
+            className={`mood-pill-btn ${activeMood === mood ? 'active' : ''}`}
+            onClick={() => setActiveMood(mood)}
+          >
+            {mood}
+          </button>
+        ))}
       </div>
 
       {/* AI Recommended Section */}
       <section className="aidj-section">
         <div className="section-header">
           <h2 className="section-title">
-            <Sparkles size={20} className="text-accent-purple" />
-            <span>AI Recommended Mixes</span>
+            <Cpu size={20} />
+            <span>Curated Mixes</span>
           </h2>
-          <span className="badge-live-ai">HIGH FIDELITY</span>
         </div>
 
         <div className="aidj-cards-grid">
@@ -52,7 +73,7 @@ export default function AiDj() {
               </div>
               <h3 className="card-heading">Neon Horizons</h3>
               <p className="card-desc">
-                A personalized journey through retro-futuristic soundscapes, mixed for deep focus.
+                A personalized journey through retro-futuristic soundscapes, mixed for deep flow.
               </p>
               <div className="card-footer">
                 <div className="avatar-group">
@@ -63,11 +84,12 @@ export default function AiDj() {
                 <button
                   className="card-play-btn synthwave-play"
                   onClick={() => handlePlayCard(synthwaveTrack.id)}
+                  aria-label="Play Synthwave"
                 >
                   {isPlaying && currentId === synthwaveTrack.id ? (
-                    <Pause size={20} fill="currentColor" />
+                    <Pause size={20} fill="#000" />
                   ) : (
-                    <Play size={20} fill="currentColor" />
+                    <Play size={20} fill="#000" />
                   )}
                 </button>
               </div>
@@ -84,7 +106,7 @@ export default function AiDj() {
               </div>
               <h3 className="card-heading">Midnight Rain</h3>
               <p className="card-desc">
-                Deep textures and lo-fi spatial audio beats designed to enhance clarity & relaxation.
+                Deep sub-bass textures, spatial lo-fi rain acoustics, and soothing frequencies.
               </p>
               <div className="card-footer">
                 <div className="avatar-group">
@@ -94,11 +116,12 @@ export default function AiDj() {
                 <button
                   className="card-play-btn ambient-play"
                   onClick={() => handlePlayCard(ambientTrack.id)}
+                  aria-label="Play Ambient"
                 >
                   {isPlaying && currentId === ambientTrack.id ? (
-                    <Pause size={20} fill="currentColor" />
+                    <Pause size={20} fill="#000" />
                   ) : (
-                    <Play size={20} fill="currentColor" />
+                    <Play size={20} fill="#000" />
                   )}
                 </button>
               </div>
@@ -107,50 +130,46 @@ export default function AiDj() {
         </div>
       </section>
 
-      {/* Recently Played / Frequency Grid */}
+      {/* Tracks Grid */}
       <section className="aidj-section">
         <div className="section-header">
           <h2 className="section-title">
-            <Disc size={20} className="text-accent-cyan" />
-            <span>Recently Played Frequencies</span>
+            <Disc size={20} />
+            <span>Recommended Tracks</span>
           </h2>
         </div>
 
         <div className="recent-cards-grid">
           {library.slice(0, 4).map((t, idx) => {
-            const titles = ['Dark Matter', 'Night Drive', 'Resonance', 'Tape Loops']
-            const artists = ['The Void', 'Kavinsky', 'HOME', 'Lorn']
-            const cardTitle = titles[idx] || t.title
-            const cardArtist = artists[idx] || t.artist
-
+            const isThisPlaying = isPlaying && currentId === t.id
             return (
               <div
                 key={t.id || idx}
-                className="recent-card card"
+                className={`recent-card ${isThisPlaying ? 'is-playing-card' : ''}`}
                 onClick={() => handlePlayCard(t.id)}
               >
                 <div className="recent-art-wrap">
                   <div
                     className="recent-art"
                     style={{
-                      background: `linear-gradient(135deg, hsl(${t.hue || 260}, 80%, 45%), hsl(${(t.hue || 260) + 60}, 90%, 25%))`,
+                      background: `linear-gradient(135deg, hsl(${t.hue || 260}, 60%, 40%), hsl(${(t.hue || 260) + 40}, 50%, 20%))`,
                     }}
                   >
                     <Disc size={36} color="rgba(255,255,255,0.7)" />
                   </div>
                   <div className="recent-play-overlay">
                     <div className="recent-play-icon">
-                      {isPlaying && currentId === t.id ? (
-                        <Pause size={22} fill="currentColor" />
+                      {isThisPlaying ? (
+                        <Pause size={22} fill="#000" />
                       ) : (
-                        <Play size={22} fill="currentColor" />
+                        <Play size={22} fill="#000" />
                       )}
                     </div>
                   </div>
                 </div>
                 <div className="recent-info">
-                  <div className="recent-title">{cardTitle}</div>
-                  <div className="recent-artist">{cardArtist}</div>
+                  <div className="recent-title">{t.title}</div>
+                  <div className="recent-artist">{t.isLive ? 'Live Radio' : t.artist}</div>
                 </div>
               </div>
             )

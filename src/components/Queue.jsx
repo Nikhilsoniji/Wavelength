@@ -41,7 +41,7 @@ function SortableRow({ id, track, index }) {
         aria-label={`Reorder ${track.title}`}
         style={{
           display: 'flex',
-          color: 'var(--text-faint)',
+          color: 'var(--text-tertiary)',
           cursor: 'grab',
           padding: '0 4px',
           touchAction: 'none',
@@ -79,15 +79,15 @@ export default function Queue() {
 
   return (
     <div className="queue-page">
-      <div className="queue-header card">
+      <div className="queue-header">
         <div>
           <h1>Queue</h1>
-          <p>Drag the handle to reorder what plays next.</p>
+          <p>Drag to reorder upcoming tracks.</p>
         </div>
         <div className="queue-summary">{queueTracks.length} tracks</div>
       </div>
 
-      <div className="queue-list card">
+      <div className="queue-list">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={queue} strategy={verticalListSortingStrategy}>
             {queueTracks.map((track, i) => (

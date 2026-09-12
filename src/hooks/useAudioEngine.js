@@ -1,16 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
+import { youtubePlayer } from '../utils/youtubePlayer'
 
-// The hardest part of a music player isn't the UI — it's making sure there's
-// exactly ONE <audio> element for the whole app, that it never unmounts as
-// the user navigates between views, and that playback state flows in a
-// single direction: store -> audio element for commands (play/pause/seek/
-// volume), and audio element -> store for facts (currentTime, duration,
-// track-ended). Mixing those two directions is what causes the classic bugs
-// (progress bar jumping, double-triggered next-track, etc).
-//
-// Call this once, at the top of <App>, so the element's lifetime matches the
-// whole app's lifetime rather than any single view's.
+/**
+ * Hybrid Audio Engine
+ * Coordinates seamless playback between native HTML5 Audio (local files, SoundHelix, live radio)
+ * and the YouTube IFrame API (for YouTube tracks and playlists).
+ *
+ * Call this once at the top of <App>.
+ */
 export function useAudioEngine() {
   const audioRef = useRef(null)
   if (!audioRef.current && typeof window !== 'undefined') {
@@ -27,70 +25,153 @@ export function useAudioEngine() {
   const next = usePlayerStore((s) => s.next)
   const repeat = usePlayerStore((s) => s.repeat)
 
-  // Source changed -> load the new file.
+  // Initialize YouTube player callbacks
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !currentTrack) return
-    if (audio.src !== currentTrack.src) {
-      audio.src = currentTrack.src
-      audio.load()
-    }
-  }, [currentTrack])
+    youtubePlayer.init({
+      onEnded: () => {
+        if (usePlayerStore.getState().repeat === 'one') {
+          youtubePlayer.seekTo(0)
+          youtubePlayer.play()
+        } else {
+          next()
+        }
+      },
+      onError: (code) => {
+        console.warn('YouTube playback error, advancing track. Code:', code)
+        next()
+      },
+    })
+  }, [next])
 
-  // Play/pause commands flow from the store to the element.
+  // Track changed -> Route to correct engine
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
-    if (isPlaying) {
-      audio.play().catch(() => {
-        // Autoplay can be blocked before the first user gesture — that's
-        // expected on load, so we just leave it paused rather than throw.
-      })
+    if (!currentTrack) return
+
+    if (currentTrack.isYouTube) {
+      // Pause HTML5 audio if it was running
+      if (audio) {
+        audio.pause()
+      }
+      if (currentTrack.duration) {
+        setDuration(currentTrack.duration)
+      }
+      youtubePlayer.loadVideo(currentTrack.youtubeId, isPlaying)
     } else {
-      audio.pause()
-    }
-  }, [isPlaying, currentTrack])
+      // Pause YouTube player if running
+      youtubePlayer.pause()
 
-  // Volume/mute flow from the store to the element.
+      if (audio && currentTrack.src && audio.src !== currentTrack.src) {
+        audio.src = currentTrack.src
+        audio.load()
+      }
+    }
+  }, [currentTrack?.id])
+
+  // Play / Pause command dispatch
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
-    audio.volume = muted ? 0 : volume
+    if (!currentTrack) return
+
+    if (currentTrack.isYouTube) {
+      if (audio) audio.pause()
+      if (isPlaying) {
+        youtubePlayer.play()
+      } else {
+        youtubePlayer.pause()
+      }
+    } else {
+      youtubePlayer.pause()
+      if (audio) {
+        if (isPlaying) {
+          audio.play().catch(() => {
+            // Autoplay prevention fallback
+          })
+        } else {
+          audio.pause()
+        }
+      }
+    }
+  }, [isPlaying, currentTrack?.id])
+
+  // Volume & Mute synchronization across both engines
+  useEffect(() => {
+    const audio = audioRef.current
+    const effectiveVolume = muted ? 0 : volume
+
+    if (audio) {
+      audio.volume = effectiveVolume
+    }
+    youtubePlayer.setVolume(effectiveVolume)
+    youtubePlayer.setMuted(muted)
   }, [volume, muted])
 
-  // Facts flow from the element back to the store.
+  // HTML5 audio event listeners
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
-    const onTimeUpdate = () => setTime(audio.currentTime)
+    const onTimeUpdate = () => {
+      if (!currentTrack?.isYouTube) {
+        setTime(audio.currentTime)
+      }
+    }
     const onLoadedMetadata = () => {
-      if (Number.isFinite(audio.duration)) setDuration(audio.duration)
+      if (!currentTrack?.isYouTube && Number.isFinite(audio.duration)) {
+        setDuration(audio.duration)
+      }
     }
     const onEnded = () => {
-      if (repeat === 'one') {
-        audio.currentTime = 0
-        audio.play()
-      } else {
-        next()
+      if (!currentTrack?.isYouTube) {
+        if (repeat === 'one') {
+          audio.currentTime = 0
+          audio.play().catch(() => {})
+        } else {
+          next()
+        }
       }
     }
 
     audio.addEventListener('timeupdate', onTimeUpdate)
     audio.addEventListener('loadedmetadata', onLoadedMetadata)
     audio.addEventListener('ended', onEnded)
+
     return () => {
       audio.removeEventListener('timeupdate', onTimeUpdate)
       audio.removeEventListener('loadedmetadata', onLoadedMetadata)
       audio.removeEventListener('ended', onEnded)
     }
-  }, [repeat, next, setTime, setDuration])
+  }, [currentTrack?.isYouTube, repeat, next, setTime, setDuration])
+
+  // YouTube audio polling heartbeat (for accurate currentTime & duration)
+  useEffect(() => {
+    if (!currentTrack?.isYouTube || !isPlaying) return
+
+    const timer = setInterval(() => {
+      const cur = youtubePlayer.getCurrentTime()
+      const dur = youtubePlayer.getDuration()
+      if (Number.isFinite(cur) && cur >= 0) {
+        setTime(cur)
+      }
+      if (Number.isFinite(dur) && dur > 0) {
+        setDuration(dur)
+      }
+    }, 250)
+
+    return () => clearInterval(timer)
+  }, [currentTrack?.isYouTube, isPlaying, setTime, setDuration])
 
   const seekTo = (seconds) => {
-    const audio = audioRef.current
-    if (!audio) return
-    audio.currentTime = seconds
-    setTime(seconds)
+    if (currentTrack?.isYouTube) {
+      youtubePlayer.seekTo(seconds)
+      setTime(seconds)
+    } else {
+      const audio = audioRef.current
+      if (audio) {
+        audio.currentTime = seconds
+        setTime(seconds)
+      }
+    }
   }
 
   return { seekTo }

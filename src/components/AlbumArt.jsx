@@ -1,33 +1,50 @@
-export default function AlbumArt({ hue = 280, size = 48, spinning = false, rounded = 12 }) {
-  const style = {
+import { useState } from 'react'
+
+export default function AlbumArt({
+  hue = 280,
+  size = 48,
+  spinning = false,
+  rounded = 12,
+  thumbnail = null,
+  cover = null,
+}) {
+  const imageUrl = thumbnail || cover
+  const [imageError, setImageError] = useState(false)
+
+  const containerStyle = {
     width: size,
     height: size,
     borderRadius: rounded,
     background: `
-      radial-gradient(circle at 30% 20%, hsl(${hue} 85% 60% / 0.95), transparent 65%),
-      linear-gradient(135deg, hsl(${hue} 65% 25%), hsl(${(hue + 45) % 360} 55% 12%))
+      radial-gradient(circle at 30% 30%, hsl(${hue} 70% 55% / 0.9), transparent 60%),
+      linear-gradient(145deg, hsl(${hue} 50% 30%), hsl(${(hue + 40) % 360} 45% 18%))
     `,
     boxShadow: spinning
-      ? `0 10px 30px -5px hsl(${hue} 85% 50% / 0.5), inset 0 0 0 1px rgba(255,255,255,0.2)`
-      : `0 6px 18px -4px hsl(${hue} 60% 40% / 0.3), inset 0 0 0 1px rgba(255,255,255,0.1)`,
+      ? `0 8px 24px -4px hsl(${hue} 60% 40% / 0.3)`
+      : `0 4px 12px -3px hsl(${hue} 40% 30% / 0.2)`,
     flexShrink: 0,
     position: 'relative',
     overflow: 'hidden',
-    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-    transform: spinning ? 'scale(1.02) rotate(2deg)' : 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
   }
 
   return (
-    <div style={style} aria-hidden="true" className="album-art-3d">
-      {spinning && (
-        <div
+    <div style={containerStyle} aria-hidden="true" className="album-art-3d">
+      {imageUrl && !imageError && (
+        <img
+          src={imageUrl}
+          alt=""
+          loading="lazy"
+          onError={() => setImageError(true)}
           style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
             position: 'absolute',
-            inset: '16%',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, #0b0a09 0 28%, transparent 30%)',
-            boxShadow: '0 0 0 1px rgba(255,255,255,0.12)',
-            animation: 'spin 5s linear infinite',
+            inset: 0,
           }}
         />
       )}

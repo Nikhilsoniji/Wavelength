@@ -1,10 +1,11 @@
-import { Home, Search, Library as LibraryIcon, Sparkles } from 'lucide-react'
+import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon } from 'lucide-react'
 
 const navItems = [
-  { id: 'library', label: 'Home',    Icon: Home },
-  { id: 'search',  label: 'Search',  Icon: Search },
-  { id: 'queue',   label: 'Library', Icon: LibraryIcon },
-  { id: 'aidj',   label: 'AI DJ',   Icon: Sparkles },
+  { id: 'library', label: 'Home', Icon: Home },
+  { id: 'search', label: 'Search', Icon: Search },
+  { id: 'radio', label: 'Radio', Icon: RadioIcon },
+  { id: 'aidj', label: 'AI DJ', Icon: Sparkles },
+  { id: 'queue', label: 'Queue', Icon: LibraryIcon },
 ]
 
 export default function Sidebar({ view, setView }) {
@@ -17,9 +18,12 @@ export default function Sidebar({ view, setView }) {
             key={id}
             onClick={() => setView(id)}
             aria-current={active ? 'page' : undefined}
-            className={`bottom-nav-item${active ? ' active' : ''}`}
+            className={`bottom-nav-item ${active ? 'active' : ''}`}
           >
-            <Icon size={22} className="bottom-nav-icon" />
+            <div className="nav-icon-container">
+              <Icon size={20} className="bottom-nav-icon" />
+
+            </div>
             <span className="bottom-nav-label">{label}</span>
           </button>
         )

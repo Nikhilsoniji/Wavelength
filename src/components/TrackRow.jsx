@@ -21,14 +21,16 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
   const isCurrent = track.id === currentId
   const isCurrentlyPlaying = isCurrent && isPlaying
 
-  const handlePlayClick = () => {
+  const handlePlayClick = (e) => {
+    e.stopPropagation()
     if (isCurrent) toggle()
     else play(track.id)
   }
 
   const handleDelete = (e) => {
     e.stopPropagation()
-    if (window.confirm(`Delete "${track.title}" from local storage?`)) {
+    const label = track.isYouTube ? 'YouTube track' : 'uploaded track'
+    if (window.confirm(`Delete "${track.title}" from your library?`)) {
       deleteTrack(track.id)
     }
   }
@@ -38,6 +40,7 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
       {...(dragHandleProps ?? {})}
       className={`track-row${isCurrent ? ' current' : ''}`}
       style={style}
+      onClick={handlePlayClick}
     >
       <div className="track-index">
         {isCurrentlyPlaying ? (
@@ -51,12 +54,13 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
         )}
       </div>
 
-      <button
-        className="track-play-btn"
-        aria-label={isCurrentlyPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
-        onClick={handlePlayClick}
-      >
-        <AlbumArt hue={track.hue} size={42} rounded={8} spinning={isCurrentlyPlaying} />
+      <div className="track-play-btn">
+        <AlbumArt
+          hue={track.hue}
+          thumbnail={track.thumbnail || track.cover}
+          size={40}
+          rounded={8}
+        />
         <span className="row-play-overlay">
           {isCurrentlyPlaying ? (
             <Pause size={16} color="#fff" fill="#fff" />
@@ -64,12 +68,13 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
             <Play size={16} color="#fff" fill="#fff" />
           )}
         </span>
-      </button>
+      </div>
 
       <div className="track-meta">
         <div className="track-title">
           {track.title}
           {track.isUploaded && <span className="track-uploaded-badge">Uploaded</span>}
+          {track.isYouTube && <span className="track-yt-badge">YouTube</span>}
         </div>
         <div className="track-artist">
           {track.artist}
@@ -79,16 +84,19 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
 
       <div className="track-album">{track.album}</div>
 
-      <div className="track-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div className="track-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <button
           className={`track-action-btn ${liked ? 'active' : ''}`}
-          onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
+          onClick={(e) => {
+            e.stopPropagation()
+            setLiked(!liked)
+          }}
           title={liked ? 'Remove from favorites' : 'Add to favorites'}
         >
-          <Heart size={15} fill={liked ? '#ff4d57' : 'none'} color={liked ? '#ff4d57' : 'currentColor'} />
+          <Heart size={15} fill={liked ? 'var(--accent)' : 'none'} color={liked ? 'var(--accent)' : 'currentColor'} />
         </button>
 
-        {track.src && (
+        {track.src && !track.isYouTube && (
           <a
             className="track-action-btn"
             href={track.src}
@@ -102,10 +110,10 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
 
         <div className="track-duration">{track.isLive ? 'Live' : formatDuration(track.duration)}</div>
 
-        {track.isUploaded && (
+        {(track.isUploaded || track.isYouTube) && (
           <button
             className="track-action-btn track-delete-btn"
-            title="Delete uploaded track"
+            title="Delete from library"
             onClick={handleDelete}
           >
             <Trash2 size={15} />

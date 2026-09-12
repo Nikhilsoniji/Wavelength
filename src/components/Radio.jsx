@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Play, Pause, Radio as RadioIcon, Search, Signal, RefreshCw } from 'lucide-react'
+import { Play, Pause, Radio as RadioIcon, Search, Signal, RefreshCw, MapPin } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 
 export default function RadioPage() {
@@ -48,14 +48,14 @@ export default function RadioPage() {
   return (
     <div className="radio-page">
       {/* Header section */}
-      <div className="radio-header-card card">
+      <div className="radio-header-card">
         <div className="radio-header-content">
           <div className="radio-badge">
-            <span className="live-dot" /> LIVE STREAMING
+            <span className="live-dot" /> LIVE RADIO
           </div>
-          <h1>Indian Radio Directory</h1>
-          <p className="muted">
-            Tune into live FM, Bollywood hits, news & regional radio broadcasts across India.
+          <h1 className="radio-page-title">Live Radio Directory</h1>
+          <p className="radio-page-desc">
+            Direct digital broadcasts of premier FM, Bollywood chartbusters, news & regional Indian stations.
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function RadioPage() {
             <Search size={16} className="search-icon" />
             <input
               type="text"
-              placeholder="Search station or state..."
+              placeholder="Search station or city..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -96,11 +96,18 @@ export default function RadioPage() {
 
       {/* Radio Stations Grid */}
       {filteredStations.length === 0 ? (
-        <div className="radio-empty card">
-          <RadioIcon size={42} className="empty-icon" />
+        <div className="radio-empty">
+          <RadioIcon size={42} className="empty-icon text-cyan" />
           <h2>No radio stations found</h2>
-          <p className="muted">Try adjusting your search query or refresh to fetch stations.</p>
-          <button className="hero-btn outline" onClick={() => { setSearch(''); setActiveCategory('All'); }}>
+          <p className="muted">Try adjusting your search query or reset filters.</p>
+          <button
+            className="hero-btn-secondary"
+            style={{ marginTop: 16 }}
+            onClick={() => {
+              setSearch('')
+              setActiveCategory('All')
+            }}
+          >
             Reset Filters
           </button>
         </div>
@@ -113,7 +120,7 @@ export default function RadioPage() {
             return (
               <div
                 key={station.id}
-                className={`radio-card card ${isCurrentlyPlaying ? 'playing' : ''}`}
+                className={`radio-card ${isCurrentlyPlaying ? 'playing' : ''}`}
               >
                 {/* Top Section */}
                 <div className="radio-card-body">
@@ -122,12 +129,12 @@ export default function RadioPage() {
                       <img src={station.cover} alt={station.title} className="radio-cover-img" />
                     ) : (
                       <div className="radio-cover-fallback">
-                        <Signal size={24} />
+                        <Signal size={24} className="text-cyan" />
                       </div>
                     )}
                     {isCurrentlyPlaying && (
                       <div className="radio-live-indicator">
-                        <span className="live-pulse" /> PLAYING
+                        <span className="live-pulse" /> ON AIR
                       </div>
                     )}
                   </div>
@@ -139,13 +146,13 @@ export default function RadioPage() {
                     <div className="radio-tags" title={station.artist}>
                       {station.artist || 'Live FM'}
                     </div>
-                    <div className="radio-location muted" title={station.album}>
-                      📍 {station.album || 'India'}
+                    <div className="radio-location" title={station.album}>
+                      <MapPin size={12} className="inline-icon" /> {station.album || 'India'}
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Action Button - Perfectly Aligned across all cards */}
+                {/* Bottom Action Button */}
                 <div className="radio-card-footer">
                   <button
                     className={`radio-play-btn ${isCurrentlyPlaying ? 'active' : ''}`}
@@ -154,7 +161,7 @@ export default function RadioPage() {
                     {isCurrentlyPlaying ? (
                       <>
                         <Pause size={16} fill="currentColor" />
-                        <span>Pause Stream</span>
+                        <span>Pause</span>
                       </>
                     ) : (
                       <>

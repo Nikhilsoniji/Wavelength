@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Sparkles, Disc, WifiOff, ArrowRight, Download } from 'lucide-react'
+import { Sparkles, Disc, ArrowRight, Download, Headphones } from 'lucide-react'
+import { WavelengthLogo } from './RealLogos'
 
 export default function OnboardingScreen({ onComplete, onDownload }) {
   const [slide, setSlide] = useState(0)
-
   const totalSlides = 3
 
   const handleNext = () => {
@@ -20,71 +20,67 @@ export default function OnboardingScreen({ onComplete, onDownload }) {
 
   return (
     <div className="fullscreen-flow-container">
-      {/* Ambient Radial Background */}
-      <div className="flow-ambient-bg">
-        <div className="ambient-blob blob-1" />
-        <div className="ambient-blob blob-2" />
-      </div>
-
       <div className="flow-card-wrapper">
-        {/* Slide Content */}
+        {/* Brand Header */}
+        <div className="flow-top-brand">
+          <WavelengthLogo size={32} glowing={false} />
+          <span className="flow-brand-title">Wavelength</span>
+        </div>
+
+        {/* Slide 0 */}
         {slide === 0 && (
           <div className="slide-item fade-in">
             <div className="slide-visual">
               <div className="visual-circle">
-                <Disc size={64} className="text-primary spin-slow" />
-                <span className="visual-tag tag-top">Ambient</span>
-                <span className="visual-tag tag-bottom">Lo-Fi</span>
-                <span className="visual-tag tag-left">Electronic</span>
+                <Disc size={64} className="text-primary" />
               </div>
             </div>
             <div className="slide-typography">
-              <h1 className="flow-title">Discover Music</h1>
+              <h1 className="flow-title">Lossless Audio</h1>
               <p className="flow-subtitle">
-                Navigate infinite soundscapes. A world of high-fidelity audio curated just for you.
+                Experience bit-perfect studio quality with rich acoustics and pure detail.
               </p>
             </div>
           </div>
         )}
 
+        {/* Slide 1 */}
         {slide === 1 && (
           <div className="slide-item fade-in">
             <div className="slide-visual">
-              <div className="visual-circle ai-border-glow">
+              <div className="visual-circle">
                 <div className="ai-equalizer-bars">
                   <div className="eq-bar bar-1" />
                   <div className="eq-bar bar-2" />
                   <div className="eq-bar bar-3" />
                   <div className="eq-bar bar-4" />
                   <div className="eq-bar bar-5" />
-                </div>
-                <div className="sparkle-badge">
-                  <Sparkles size={20} className="text-primary" />
+                  <div className="eq-bar bar-6" />
+                  <div className="eq-bar bar-7" />
                 </div>
               </div>
             </div>
             <div className="slide-typography">
-              <h1 className="flow-title">Personal Frequencies</h1>
+              <h1 className="flow-title">Smart Discovery</h1>
               <p className="flow-subtitle">
-                Our AI analyzes your listening patterns to generate dynamic, evolving playlists.
+                Evolving playlists that adapt to your focus state and musical tastes.
               </p>
             </div>
           </div>
         )}
 
+        {/* Slide 2 */}
         {slide === 2 && (
           <div className="slide-item fade-in">
             <div className="slide-visual">
-              <div className="visual-circle offline-circle">
-                <WifiOff size={56} className="text-secondary" />
-                <div className="ripple-ring ring-1" />
-                <div className="ripple-ring ring-2" />
+              <div className="visual-circle">
+                <Headphones size={56} className="text-secondary" />
               </div>
             </div>
             <div className="slide-typography">
-              <h1 className="flow-title">Anywhere, Anytime</h1>
+              <h1 className="flow-title">Live & Offline</h1>
               <p className="flow-subtitle">
-                Download your soundscapes in 24-bit lossless quality. Your music, unbound from the grid.
+                Upload your favorite tracks and tune into live radio broadcasts anytime.
               </p>
             </div>
           </div>
@@ -94,10 +90,11 @@ export default function OnboardingScreen({ onComplete, onDownload }) {
         <div className="flow-footer">
           <div className="flow-dots">
             {Array.from({ length: totalSlides }).map((_, i) => (
-              <span
+              <button
                 key={i}
                 className={`flow-dot ${i === slide ? 'active' : ''}`}
                 onClick={() => setSlide(i)}
+                aria-label={`Go to slide ${i + 1}`}
               />
             ))}
           </div>
@@ -108,16 +105,18 @@ export default function OnboardingScreen({ onComplete, onDownload }) {
               <ArrowRight size={18} />
             </button>
 
-            {slide < totalSlides - 1 && (
-              <button className="flow-secondary-btn" onClick={handleSkip}>
-                Skip to Login
-              </button>
-            )}
+            <div className="flow-secondary-row">
+              {slide < totalSlides - 1 && (
+                <button className="flow-secondary-btn" onClick={handleSkip}>
+                  Skip
+                </button>
+              )}
 
-            <button className="flow-download-btn" onClick={onDownload}>
-              <Download size={16} />
-              <span>Download App</span>
-            </button>
+              <button className="flow-download-btn" onClick={onDownload}>
+                <Download size={15} />
+                <span>About</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

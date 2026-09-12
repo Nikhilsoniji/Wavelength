@@ -1,25 +1,44 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="112" fill="#09090B"/>
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#937dff"/>
-      <stop offset="50%" stop-color="#cabeff"/>
-      <stop offset="100%" stop-color="#a2e7ff"/>
+    <linearGradient id="wv-bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090a10"/>
+      <stop offset="50%" stop-color="#0f111f"/>
+      <stop offset="100%" stop-color="#06070a"/>
     </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="16" result="blur"/>
+    <linearGradient id="wv-accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="45%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    <linearGradient id="wv-sub-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <filter id="wv-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
-  <!-- Background Glow Ring -->
-  <circle cx="256" cy="256" r="180" fill="none" stroke="url(#grad)" stroke-width="4" opacity="0.2" />
-  <!-- Wave Bars -->
-  <g filter="url(#glow)">
-    <rect x="116" y="216" width="28" height="80" rx="14" fill="url(#grad)"/>
-    <rect x="164" y="156" width="28" height="200" rx="14" fill="url(#grad)"/>
-    <rect x="212" y="106" width="28" height="300" rx="14" fill="url(#grad)"/>
-    <rect x="260" y="176" width="28" height="160" rx="14" fill="url(#grad)"/>
-    <rect x="308" y="126" width="28" height="260" rx="14" fill="url(#grad)"/>
-    <rect x="356" y="206" width="28" height="100" rx="14" fill="url(#grad)"/>
+
+  <!-- App Rounded Icon Plate -->
+  <rect width="512" height="512" rx="120" fill="url(#wv-bg-grad)" stroke="rgba(255,255,255,0.12)" stroke-width="3"/>
+
+  <!-- Glowing Sonic Orbit Ring -->
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#wv-accent-grad)" stroke-width="4" opacity="0.4" />
+  <circle cx="256" cy="256" r="185" fill="none" stroke="rgba(255,255,255,0.06)" stroke-dasharray="12 8" stroke-width="2"/>
+
+  <!-- Central Sonic Spectrum Bars Forming "W" -->
+  <g filter="url(#wv-glow)">
+    <rect x="110" y="196" width="32" height="120" rx="16" fill="url(#wv-sub-grad)"/>
+    <rect x="166" y="126" width="32" height="260" rx="16" fill="url(#wv-accent-grad)"/>
+    <rect x="222" y="170" width="32" height="172" rx="16" fill="url(#wv-sub-grad)"/>
+    <rect x="278" y="96" width="32" height="320" rx="16" fill="url(#wv-accent-grad)"/>
+    <rect x="334" y="160" width="32" height="192" rx="16" fill="url(#wv-sub-grad)"/>
+    <rect x="390" y="216" width="32" height="80" rx="16" fill="url(#wv-accent-grad)"/>
   </g>
+
+  <!-- High-Tech Holographic Orbit Nodes -->
+  <circle cx="126" cy="140" r="10" fill="#00f0ff" filter="url(#wv-glow)"/>
+  <circle cx="386" cy="120" r="12" fill="#ec4899" filter="url(#wv-glow)"/>
+  <circle cx="256" cy="425" r="9" fill="#8b5cf6" filter="url(#wv-glow)"/>
 </svg>

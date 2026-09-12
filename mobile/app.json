@@ -2,6 +2,7 @@
   "expo": {
     "name": "Wavelength",
     "slug": "wavelength-music",
+    "scheme": "wavelength",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,13 +20,23 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#09090B"
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#09090B",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.wavelength.music"
+      "package": "com.wavelength.music",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }
