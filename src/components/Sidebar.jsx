@@ -1,4 +1,4 @@
-import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon } from 'lucide-react'
+import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon, Info } from 'lucide-react'
 
 const navItems = [
   { id: 'library', label: 'Home', Icon: Home },
@@ -6,6 +6,7 @@ const navItems = [
   { id: 'radio', label: 'Radio', Icon: RadioIcon },
   { id: 'aidj', label: 'AI DJ', Icon: Sparkles },
   { id: 'queue', label: 'Queue', Icon: LibraryIcon },
+  { id: 'about', label: 'About', Icon: Info },
 ]
 
 export default function Sidebar({ view, setView }) {

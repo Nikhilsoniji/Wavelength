@@ -12,6 +12,7 @@ import AuthScreen from './components/AuthScreen'
 import LandingPage from './components/LandingPage'
 import ImportYouTubeModal from './components/ImportYouTubeModal'
 import { WavelengthLogo } from './components/RealLogos'
+import AboutUs from './components/AboutUs'
 import {
   Sparkles,
   Search,
@@ -22,6 +23,7 @@ import {
   Disc3,
   Headphones,
   Youtube,
+  Info,
 } from 'lucide-react'
 
 const AI_CARDS = [
@@ -193,11 +195,11 @@ export default function App() {
             <Upload size={18} />
           </button>
           <button
-            className="stitch-topbar-btn"
-            onClick={() => updateFlowStep('landing')}
-            title="About Wavelength"
+            className={`stitch-topbar-btn ${view === 'about' ? 'active' : ''}`}
+            onClick={() => setView('about')}
+            title="About Us"
           >
-            <Sparkles size={18} />
+            <Info size={18} />
           </button>
           <button
             className="stitch-topbar-btn user-avatar-btn"
@@ -487,6 +489,15 @@ export default function App() {
         {view === 'radio' && (
           <div className="stitch-view-page">
             <Radio />
+          </div>
+        )}
+        {view === 'about' && (
+          <div className="stitch-view-page">
+            <AboutUs
+              onExplore={() => setView('library')}
+              onOpenRadio={() => setView('radio')}
+              onOpenAiDj={() => setView('aidj')}
+            />
           </div>
         )}
       </main>
