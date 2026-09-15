@@ -96,9 +96,14 @@ export const usePlayerStore = create((set, get) => ({
         return rec
       })
 
-      const existingIds = new Set(parsedTracks.map((t) => t.id))
+      // Filter out any legacy SoundHelix demo tracks that might have been saved in old sessions
+      const validSaved = parsedTracks.filter(
+        (t) => !/^t[1-9]$/.test(t.id) && !t.src?.includes('SoundHelix')
+      )
+
+      const existingIds = new Set(validSaved.map((t) => t.id))
       const defaultTracks = tracks.filter((t) => !existingIds.has(t.id))
-      const combinedLibrary = [...parsedTracks, ...defaultTracks]
+      const combinedLibrary = [...validSaved, ...defaultTracks]
 
       set({
         library: combinedLibrary,

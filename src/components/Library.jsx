@@ -2,20 +2,25 @@ import { useMemo, useState } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import TrackRow from './TrackRow'
 import SearchBar from './SearchBar'
-import { Disc3, Clock, Youtube, Play, Check } from 'lucide-react'
+import { Disc3, Clock, Youtube, Play, Music } from 'lucide-react'
 
 export default function Library({ onOpenYouTubeModal }) {
   const library = usePlayerStore((s) => s.library)
   const searchQuery = usePlayerStore((s) => s.searchQuery)
   const savedPlaylists = usePlayerStore((s) => s.savedPlaylists)
   const playPlaylist = usePlayerStore((s) => s.playPlaylist)
-  const [activePlaylistFilter, setActivePlaylistFilter] = useState(null)
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState('all')
 
-  const activePlaylist = savedPlaylists.find((p) => p.id === activePlaylistFilter)
+  const activePlaylist = savedPlaylists.find((p) => p.id === activeCategoryFilter)
 
   const filtered = useMemo(() => {
     let list = library
-    if (activePlaylist && activePlaylist.tracks) {
+
+    if (activeCategoryFilter === 'bollywood') {
+      list = list.filter((t) => t.category === 'Bollywood')
+    } else if (activeCategoryFilter === 'hollywood') {
+      list = list.filter((t) => t.category === 'Hollywood')
+    } else if (activePlaylist && activePlaylist.tracks) {
       const playlistTrackIds = new Set(activePlaylist.tracks.map((t) => t.id))
       list = list.filter((t) => playlistTrackIds.has(t.id))
     }
@@ -26,9 +31,19 @@ export default function Library({ onOpenYouTubeModal }) {
       (t) =>
         t.title?.toLowerCase().includes(q) ||
         t.artist?.toLowerCase().includes(q) ||
-        t.album?.toLowerCase().includes(q)
+        t.album?.toLowerCase().includes(q) ||
+        t.genre?.toLowerCase().includes(q)
     )
-  }, [library, searchQuery, activePlaylist])
+  }, [library, searchQuery, activeCategoryFilter, activePlaylist])
+
+  const bollywoodCount = useMemo(
+    () => library.filter((t) => t.category === 'Bollywood').length,
+    [library]
+  )
+  const hollywoodCount = useMemo(
+    () => library.filter((t) => t.category === 'Hollywood').length,
+    [library]
+  )
 
   return (
     <div className="library-page">
@@ -38,7 +53,8 @@ export default function Library({ onOpenYouTubeModal }) {
           <div className="library-meta-row">
             <p className="library-subtitle">
               {library.length} tracks
-              {savedPlaylists.length > 0 && ` • ${savedPlaylists.length} saved playlist${savedPlaylists.length > 1 ? 's' : ''}`}
+              {savedPlaylists.length > 0 &&
+                ` • ${savedPlaylists.length} saved playlist${savedPlaylists.length > 1 ? 's' : ''}`}
             </p>
             {onOpenYouTubeModal && (
               <button
@@ -58,38 +74,56 @@ export default function Library({ onOpenYouTubeModal }) {
         </div>
       </div>
 
-      {/* Playlist Filter Chips */}
-      {savedPlaylists.length > 0 && (
-        <div className="library-playlist-chips-row">
+      {/* Category & Playlist Filter Chips */}
+      <div className="library-playlist-chips-row">
+        <button
+          className={`lib-playlist-chip ${activeCategoryFilter === 'all' ? 'active' : ''}`}
+          onClick={() => setActiveCategoryFilter('all')}
+        >
+          All Hits ({library.length})
+        </button>
+        {bollywoodCount > 0 && (
           <button
-            className={`lib-playlist-chip ${activePlaylistFilter === null ? 'active' : ''}`}
-            onClick={() => setActivePlaylistFilter(null)}
+            className={`lib-playlist-chip ${activeCategoryFilter === 'bollywood' ? 'active' : ''}`}
+            onClick={() => setActiveCategoryFilter('bollywood')}
           >
-            All Tracks
+            Bollywood ({bollywoodCount})
           </button>
-          {savedPlaylists.map((pl) => (
-            <button
-              key={pl.id}
-              className={`lib-playlist-chip ${activePlaylistFilter === pl.id ? 'active' : ''}`}
-              onClick={() => setActivePlaylistFilter(activePlaylistFilter === pl.id ? null : pl.id)}
-            >
-              <Youtube size={12} className="yt-icon-red" />
-              <span>{pl.title}</span>
-              <span className="chip-count">({pl.trackCount || pl.tracks?.length || 0})</span>
-            </button>
-          ))}
-          {activePlaylist && (
-            <button
-              className="lib-playlist-playall-btn"
-              onClick={() => playPlaylist(activePlaylist)}
-              title="Play all tracks in this playlist"
-            >
-              <Play size={12} fill="currentColor" />
-              <span>Play Playlist</span>
-            </button>
-          )}
-        </div>
-      )}
+        )}
+        {hollywoodCount > 0 && (
+          <button
+            className={`lib-playlist-chip ${activeCategoryFilter === 'hollywood' ? 'active' : ''}`}
+            onClick={() => setActiveCategoryFilter('hollywood')}
+          >
+            Hollywood ({hollywoodCount})
+          </button>
+        )}
+        {savedPlaylists.map((pl) => (
+          <button
+            key={pl.id}
+            className={`lib-playlist-chip ${activeCategoryFilter === pl.id ? 'active' : ''}`}
+            onClick={() =>
+              setActiveCategoryFilter(activeCategoryFilter === pl.id ? 'all' : pl.id)
+            }
+          >
+            <Youtube size={12} className="yt-icon-red" />
+            <span>{pl.title}</span>
+            <span className="chip-count">
+              ({pl.trackCount || pl.tracks?.length || 0})
+            </span>
+          </button>
+        ))}
+        {activePlaylist && (
+          <button
+            className="lib-playlist-playall-btn"
+            onClick={() => playPlaylist(activePlaylist)}
+            title="Play all tracks in this playlist"
+          >
+            <Play size={12} fill="currentColor" />
+            <span>Play Playlist</span>
+          </button>
+        )}
+      </div>
 
       {filtered.length === 0 ? (
         <div className="library-empty">
@@ -101,21 +135,18 @@ export default function Library({ onOpenYouTubeModal }) {
         </div>
       ) : (
         <div className="library-panel">
-          {/* Table Column Headers */}
-          <div className="track-table-header">
-            <div className="th-index">#</div>
-            <div className="th-title">TITLE</div>
-            <div className="th-album">ALBUM</div>
-            <div className="th-actions">
+          <div className="track-list-header">
+            <div className="col-index">#</div>
+            <div className="col-title">Title</div>
+            <div className="col-album">Album</div>
+            <div className="col-duration">
               <Clock size={14} />
             </div>
           </div>
 
           <div className="track-list">
             {filtered.map((track, i) => (
-              <div key={track.id} className="track-list-row">
-                <TrackRow track={track} index={i + 1} />
-              </div>
+              <TrackRow key={track.id} track={track} index={i + 1} />
             ))}
           </div>
         </div>

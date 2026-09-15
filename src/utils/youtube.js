@@ -4,27 +4,35 @@
 
 export const SAMPLE_PLAYLISTS = [
   {
-    title: "Today's Top Hits & Pop",
-    description: "Trending pop and global billboard charts",
+    title: "Bollywood Romance & Top Hits",
+    description: "Trending Bollywood hits, romantic anthems, and chartbusters",
+    url: "https://www.youtube.com/playlist?list=PL9bw4S5ePsEGpT9PdWJYN8joMa2eWAxJf",
+    id: "PL9bw4S5ePsEGpT9PdWJYN8joMa2eWAxJf",
+    count: "50+ tracks",
+  },
+  {
+    title: "Top 50 Global Pop & Hollywood Hits",
+    description: "Global billboard chartbusters, viral hits, and English pop",
+    url: "https://www.youtube.com/playlist?list=PLgzTt0k8mXzEk586ze4BjvDXR7c-TUSnx",
+    id: "PLgzTt0k8mXzEk586ze4BjvDXR7c-TUSnx",
+    count: "50 tracks",
+  },
+  {
+    title: "Bollywood Classic & 90s Hits",
+    description: "Iconic Bollywood timeless classics, melodies, and nostalgia",
+    url: "https://www.youtube.com/playlist?list=PLMRKdK25AuPVjHl9Kdb-gkBy0Cm7Zi2xo",
+    id: "PLMRKdK25AuPVjHl9Kdb-gkBy0Cm7Zi2xo",
+    count: "60+ tracks",
+  },
+  {
+    title: "Global Music Hits 2026",
+    description: "Trending pop, EDM and global billboard charts",
     url: "https://www.youtube.com/playlist?list=PLw-VjHDlEOgvtnnnqWlTqByAtC7tXBg6D",
     id: "PLw-VjHDlEOgvtnnnqWlTqByAtC7tXBg6D",
     count: "100 tracks",
   },
-  {
-    title: "Synthwave / Retro Chill",
-    description: "Futuristic neon beats, dark synth and analog electronic",
-    url: "https://www.youtube.com/playlist?list=PL3-Unqi_h4GuhI0-Y0-Yl-kZ1XqKkZpQ9",
-    id: "PL3-Unqi_h4GuhI0-Y0-Yl-kZ1XqKkZpQ9",
-    count: "40 tracks",
-  },
-  {
-    title: "Lo-Fi Beats to Relax / Study",
-    description: "Chill beats, ambient vibes and warm vinyl melodies",
-    url: "https://www.youtube.com/playlist?list=PLOzDu-MXXLliO9fBNZOQTBDddoA3FzZUo",
-    id: "PLOzDu-MXXLliO9fBNZOQTBDddoA3FzZUo",
-    count: "50 tracks",
-  },
 ]
+
 
 /**
  * Extracts a YouTube playlist ID from various URL formats or raw ID.

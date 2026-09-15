@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAudioEngine } from './hooks/useAudioEngine'
 import { usePlayerStore } from './store/usePlayerStore'
 import Sidebar from './components/Sidebar'
@@ -26,38 +26,38 @@ import {
 
 const AI_CARDS = [
   {
-    id: 'neon',
-    tag: 'Synthwave Focus',
-    title: 'Neon Horizons',
-    desc: 'A personalized journey through retro-futuristic soundscapes, mixed for deep flow.',
+    id: 'bollywood-vibes',
+    tag: 'Bollywood Hits 2026',
+    title: 'Desi Chartbusters',
+    desc: 'The biggest romantic melodies, party anthems, and viral Bollywood hits curated for you.',
+    color: '#f59e0b',
+    bg: 'linear-gradient(135deg, rgba(50, 25, 5, 0.95) 0%, rgba(120, 53, 15, 0.85) 45%, rgba(20, 10, 5, 0.95) 100%)',
+    trackId: 'bw-1',
+  },
+  {
+    id: 'hollywood-hot100',
+    tag: 'Global Pop & Billboard',
+    title: 'Hollywood Hot 100',
+    desc: 'Worldwide trending hits from Lady Gaga, Bruno Mars, Sabrina Carpenter, Billie Eilish & The Weeknd.',
     color: '#cabeff',
-    bg: 'linear-gradient(135deg, rgba(26, 5, 51, 0.9) 0%, rgba(45, 10, 107, 0.8) 40%, rgba(10, 26, 61, 0.9) 100%)',
-    trackId: 't1',
+    bg: 'linear-gradient(135deg, rgba(26, 5, 51, 0.95) 0%, rgba(45, 10, 107, 0.85) 45%, rgba(10, 26, 61, 0.95) 100%)',
+    trackId: 'hw-1',
   },
   {
-    id: 'midnight',
-    tag: 'Ambient Drift',
-    title: 'Midnight Rain',
-    desc: 'Deep textures, spatial lo-fi, and warm acoustic frequencies.',
-    color: '#a2e7ff',
-    bg: 'linear-gradient(135deg, rgba(0, 26, 44, 0.9) 0%, rgba(0, 48, 66, 0.8) 50%, rgba(10, 10, 20, 0.9) 100%)',
-    trackId: 't2',
-  },
-  {
-    id: 'solar',
-    tag: 'Deep Spatial',
-    title: 'Solar Winds',
-    desc: 'Ambient electronic journeys expanding across immersive sonic dimensions.',
+    id: 'party-beats',
+    tag: 'Club & Dance Fire',
+    title: 'Party & Club Heat',
+    desc: 'Electrifying club anthems featuring Tauba Tauba, Jhoome Jo Pathaan, Kala Chashma & Dilbar.',
     color: '#ec4899',
-    bg: 'linear-gradient(135deg, rgba(30, 0, 50, 0.9) 0%, rgba(60, 0, 80, 0.8) 50%, rgba(10, 5, 30, 0.9) 100%)',
-    trackId: 't3',
+    bg: 'linear-gradient(135deg, rgba(50, 0, 30, 0.95) 0%, rgba(112, 26, 117, 0.85) 45%, rgba(20, 5, 25, 0.95) 100%)',
+    trackId: 'bw-2',
   },
 ]
 
 const QUICK_FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'spatial', label: 'Spatial Audio' },
-  { id: 'lossless', label: 'Lossless' },
+  { id: 'all', label: 'All Hits' },
+  { id: 'bollywood', label: 'Bollywood' },
+  { id: 'hollywood', label: 'Hollywood' },
   { id: 'radio', label: 'Live Radio' },
   { id: 'ambient', label: 'AI Mixes' },
 ]
@@ -135,7 +135,15 @@ export default function App() {
     return <AuthScreen onComplete={() => updateFlowStep('main')} />
   }
 
-  const recentTracks = library.length > 0 ? library.slice(0, 6) : []
+  const recentTracks = useMemo(() => {
+    if (activeFilter === 'bollywood') {
+      return library.filter((t) => t.category === 'Bollywood').slice(0, 10)
+    }
+    if (activeFilter === 'hollywood') {
+      return library.filter((t) => t.category === 'Hollywood').slice(0, 10)
+    }
+    return library.slice(0, 10)
+  }, [library, activeFilter])
 
   return (
     <div className="stitch-shell">
@@ -233,7 +241,7 @@ export default function App() {
                   <div className="hero-banner-actions">
                     <button
                       className="hero-play-main-btn"
-                      onClick={() => (track ? toggle() : play(library[0]?.id || 't1'))}
+                      onClick={() => (track ? toggle() : play(library[0]?.id || 'bw-1'))}
                     >
                       {isPlaying ? (
                         <>
