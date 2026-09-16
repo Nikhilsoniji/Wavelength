@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "mobile": "npm --prefix mobile start"
+    "mobile": "npm --prefix mobile start",
+    "mobile:build:android": "npm --prefix mobile run build:android",
+    "mobile:build:apk": "npm --prefix mobile run build:android:apk",
+    "mobile:build:ios": "npm --prefix mobile run build:ios"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
