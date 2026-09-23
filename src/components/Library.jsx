@@ -16,7 +16,9 @@ export default function Library({ onOpenYouTubeModal }) {
   const filtered = useMemo(() => {
     let list = library
 
-    if (activeCategoryFilter === 'bollywood') {
+    if (activeCategoryFilter === 'offline') {
+      list = list.filter((t) => t.isOfflineReady || t.isUploaded || t.src || t.blob)
+    } else if (activeCategoryFilter === 'bollywood') {
       list = list.filter((t) => t.category === 'Bollywood')
     } else if (activeCategoryFilter === 'hollywood') {
       list = list.filter((t) => t.category === 'Hollywood')
@@ -36,6 +38,10 @@ export default function Library({ onOpenYouTubeModal }) {
     )
   }, [library, searchQuery, activeCategoryFilter, activePlaylist])
 
+  const offlineCount = useMemo(
+    () => library.filter((t) => t.isOfflineReady || t.isUploaded || t.src || t.blob).length,
+    [library]
+  )
   const bollywoodCount = useMemo(
     () => library.filter((t) => t.category === 'Bollywood').length,
     [library]
@@ -82,6 +88,14 @@ export default function Library({ onOpenYouTubeModal }) {
         >
           All Hits ({library.length})
         </button>
+        {offlineCount > 0 && (
+          <button
+            className={`lib-playlist-chip lib-offline-chip ${activeCategoryFilter === 'offline' ? 'active' : ''}`}
+            onClick={() => setActiveCategoryFilter('offline')}
+          >
+            ⚡ Offline Ready ({offlineCount})
+          </button>
+        )}
         {bollywoodCount > 0 && (
           <button
             className={`lib-playlist-chip ${activeCategoryFilter === 'bollywood' ? 'active' : ''}`}

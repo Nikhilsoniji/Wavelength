@@ -73,7 +73,8 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
       <div className="track-meta">
         <div className="track-title">
           {track.title}
-          {track.isUploaded && <span className="track-uploaded-badge">Uploaded</span>}
+          {track.isOfflineReady && <span className="track-offline-badge">Offline Ready</span>}
+          {track.isUploaded && <span className="track-uploaded-badge">Offline File</span>}
           {track.isYouTube && <span className="track-yt-badge">YouTube</span>}
         </div>
         <div className="track-artist">

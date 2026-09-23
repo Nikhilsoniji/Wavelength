@@ -20,6 +20,18 @@ export const usePlayerStore = create((set, get) => ({
   repeat: 'off', // 'off' | 'all' | 'one'
   searchQuery: '',
   savedPlaylists: [],
+  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  isOfflineSimulated: false,
+  offlineWarning: null,
+
+  setIsOnline: (status) => set({ isOnline: status }),
+  toggleOfflineSimulation: () =>
+    set((s) => ({
+      isOfflineSimulated: !s.isOfflineSimulated,
+      offlineWarning: null,
+    })),
+  dismissOfflineWarning: () => set({ offlineWarning: null }),
+  isEffectiveOffline: () => !get().isOnline || get().isOfflineSimulated,
 
   currentTrack: () => {
     const { library, currentId } = get()
@@ -27,8 +39,29 @@ export const usePlayerStore = create((set, get) => ({
   },
 
   play: (id) => {
-    if (id && id !== get().currentId) {
-      set({ currentId: id, isPlaying: true, currentTime: 0 })
+    const targetId = id || get().currentId
+    const targetTrack = get().library.find((t) => t.id === targetId)
+
+    // When offline, if user clicks a YouTube-only stream, fallback to offline audio
+    if (get().isEffectiveOffline() && targetTrack?.isYouTube && !targetTrack.src) {
+      const offlineFallback = get().library.find(
+        (t) => t.isOfflineReady || t.isUploaded || t.src || t.blob
+      )
+      set({
+        offlineWarning: {
+          trackTitle: targetTrack.title,
+          fallbackTitle: offlineFallback ? offlineFallback.title : 'Wavelength Horizon',
+        },
+      })
+      if (offlineFallback) {
+        set({ currentId: offlineFallback.id, isPlaying: true, currentTime: 0 })
+      }
+      return
+    }
+
+    set({ offlineWarning: null })
+    if (targetId && targetId !== get().currentId) {
+      set({ currentId: targetId, isPlaying: true, currentTime: 0 })
     } else {
       set({ isPlaying: true })
     }

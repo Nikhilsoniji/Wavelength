@@ -2,6 +2,22 @@
 // Seamlessly powered by Wavelength's high-fidelity audio engine.
 
 export const tracks = [
+  // === OFFLINE MASTER TRACK (Available 100% Offline Without Internet) ===
+  {
+    id: 'offline-master-1',
+    title: 'Wavelength Horizon (Offline Master)',
+    artist: 'Wavelength Acoustics',
+    album: 'Offline Spatial Series',
+    duration: 32,
+    hue: 160,
+    src: '/audio/wavelength-offline-melody.wav',
+    isOfflineReady: true,
+    isYouTube: false,
+    thumbnail: '/icon.svg',
+    category: 'Offline',
+    genre: 'Spatial Ambient',
+  },
+
   // === BOLLYWOOD HITS ===
   {
     id: 'bw-1',

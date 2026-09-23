@@ -43,6 +43,22 @@ export function useAudioEngine() {
     })
   }, [next])
 
+  // Track Online / Offline connectivity status
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const handleOnline = () => usePlayerStore.getState().setIsOnline(true)
+    const handleOffline = () => usePlayerStore.getState().setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+
   // Track changed -> Route to correct engine
   useEffect(() => {
     const audio = audioRef.current

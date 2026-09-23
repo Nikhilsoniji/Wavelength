@@ -24,6 +24,9 @@ import {
   Headphones,
   Youtube,
   Info,
+  Wifi,
+  WifiOff,
+  X,
 } from 'lucide-react'
 
 const AI_CARDS = [
@@ -58,6 +61,7 @@ const AI_CARDS = [
 
 const QUICK_FILTERS = [
   { id: 'all', label: 'All Hits' },
+  { id: 'offline', label: '⚡ Offline Ready' },
   { id: 'bollywood', label: 'Bollywood' },
   { id: 'hollywood', label: 'Hollywood' },
   { id: 'radio', label: 'Live Radio' },
@@ -103,7 +107,11 @@ export default function App() {
   const addUploadedTrack = usePlayerStore((s) => s.addUploadedTrack)
   const library = usePlayerStore((s) => s.library)
   const savedPlaylists = usePlayerStore((s) => s.savedPlaylists)
-  const playPlaylist = usePlayerStore((s) => s.playPlaylist)
+  const isEffectiveOffline = usePlayerStore((s) => s.isEffectiveOffline())
+  const isOfflineSimulated = usePlayerStore((s) => s.isOfflineSimulated)
+  const toggleOfflineSimulation = usePlayerStore((s) => s.toggleOfflineSimulation)
+  const offlineWarning = usePlayerStore((s) => s.offlineWarning)
+  const dismissOfflineWarning = usePlayerStore((s) => s.dismissOfflineWarning)
 
   const fileInputRef = useRef(null)
 
@@ -138,6 +146,9 @@ export default function App() {
   }
 
   const recentTracks = useMemo(() => {
+    if (activeFilter === 'offline') {
+      return library.filter((t) => t.isOfflineReady || t.isUploaded || t.src || t.blob).slice(0, 10)
+    }
     if (activeFilter === 'bollywood') {
       return library.filter((t) => t.category === 'Bollywood').slice(0, 10)
     }
@@ -181,6 +192,17 @@ export default function App() {
 
         <div className="stitch-topbar-actions">
           <button
+            className={`stitch-topbar-btn ${isEffectiveOffline ? 'offline-active-btn' : ''}`}
+            onClick={toggleOfflineSimulation}
+            title={
+              isEffectiveOffline
+                ? 'Offline Mode Active — Click to switch Online'
+                : 'Online Mode — Click to simulate / test Offline Mode'
+            }
+          >
+            {isEffectiveOffline ? <WifiOff size={18} className="text-amber" /> : <Wifi size={18} />}
+          </button>
+          <button
             className="stitch-topbar-btn yt-topbar-btn"
             onClick={() => setIsYouTubeModalOpen(true)}
             title="Import YouTube Playlist"
@@ -210,6 +232,53 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {/* Offline Status Banner */}
+      {isEffectiveOffline && (
+        <div className="offline-status-banner">
+          <div className="offline-banner-content">
+            <div className="offline-badge-pill">
+              <WifiOff size={13} />
+              <span>Offline Mode</span>
+            </div>
+            <span className="offline-banner-text">
+              {offlineWarning
+                ? `"${offlineWarning.trackTitle}" requires internet. Playing "${offlineWarning.fallbackTitle}" offline.`
+                : 'Operating from local device storage. Playing offline & uploaded tracks.'}
+            </span>
+          </div>
+          <div className="offline-banner-actions">
+            <button
+              className="offline-banner-btn"
+              onClick={() => {
+                const offlineTrack = library.find(
+                  (t) => t.isOfflineReady || t.isUploaded || t.src || t.blob
+                )
+                if (offlineTrack) play(offlineTrack.id)
+              }}
+            >
+              Play Offline Track
+            </button>
+            {isOfflineSimulated && (
+              <button
+                className="offline-banner-btn offline-exit-btn"
+                onClick={toggleOfflineSimulation}
+              >
+                Go Online
+              </button>
+            )}
+            {offlineWarning && (
+              <button
+                className="offline-banner-close"
+                onClick={dismissOfflineWarning}
+                aria-label="Dismiss notice"
+              >
+                <X size={15} />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="stitch-main" key={view}>
