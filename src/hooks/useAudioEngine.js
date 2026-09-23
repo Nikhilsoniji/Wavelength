@@ -174,5 +174,52 @@ export function useAudioEngine() {
     }
   }
 
+  // Cross-Browser MediaSession API integration (iOS Lock Screen, Android Notification & Hardware Keys)
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
+    if (!currentTrack) return
+
+    try {
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: currentTrack.title || 'Wavelength Music',
+        artist: currentTrack.artist || 'Wavelength',
+        album: currentTrack.album || 'Wavelength Stream',
+        artwork: [
+          {
+            src: currentTrack.thumbnail || currentTrack.cover || '/icon.svg',
+            sizes: '512x512',
+            type: 'image/jpeg',
+          },
+        ],
+      })
+    } catch {}
+
+    const handlePlay = () => usePlayerStore.getState().play()
+    const handlePause = () => usePlayerStore.getState().pause()
+    const handleNext = () => usePlayerStore.getState().next()
+    const handlePrev = () => usePlayerStore.getState().prev()
+    const handleSeek = (details) => {
+      if (details.seekTime != null) {
+        seekTo(details.seekTime)
+      }
+    }
+
+    try {
+      navigator.mediaSession.setActionHandler('play', handlePlay)
+      navigator.mediaSession.setActionHandler('pause', handlePause)
+      navigator.mediaSession.setActionHandler('previoustrack', handleNext)
+      navigator.mediaSession.setActionHandler('nexttrack', handleNext)
+      navigator.mediaSession.setActionHandler('seekto', handleSeek)
+    } catch {}
+  }, [currentTrack?.id])
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return
+    try {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused'
+    } catch {}
+  }, [isPlaying])
+
   return { seekTo }
 }
+
