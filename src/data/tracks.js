@@ -1,7 +1,81 @@
-// Curated library of the latest and greatest Bollywood & Hollywood hits.
-// Seamlessly powered by Wavelength's high-fidelity audio engine.
+// Curated library of the latest and greatest Bollywood & Hollywood hits, plus 24/7 Live Video Streams.
+// Seamlessly powered by Wavelength's high-fidelity audio & video engine.
+
+export const videoStreams = [
+  {
+    id: 'stream-lofi-1',
+    title: 'Lofi Hip Hop Radio 24/7',
+    artist: 'Lofi Girl',
+    album: 'Live 24/7 Stream (Beats to Relax/Study)',
+    duration: 0,
+    hue: 270,
+    youtubeId: 'jfKfPfyJRdk',
+    isYouTube: true,
+    isVideoStream: true,
+    isLive: true,
+    thumbnail: 'https://img.youtube.com/vi/jfKfPfyJRdk/hqdefault.jpg',
+    category: 'Video Stream',
+    genre: 'Lofi Chill',
+    quality: '1080p HD',
+    viewers: '28.4K',
+  },
+  {
+    id: 'stream-bollywood-1',
+    title: 'Bollywood 24/7 Live Hits',
+    artist: 'T-Series & Top Artists',
+    album: 'Non-Stop Hindi Music Video Broadcast',
+    duration: 0,
+    hue: 35,
+    youtubeId: 'D9G1VOjN_84',
+    isYouTube: true,
+    isVideoStream: true,
+    isLive: true,
+    thumbnail: 'https://img.youtube.com/vi/D9G1VOjN_84/hqdefault.jpg',
+    category: 'Video Stream',
+    genre: 'Bollywood',
+    quality: '1080p HD',
+    viewers: '41.2K',
+  },
+  {
+    id: 'stream-synthwave-1',
+    title: 'Synthwave Radio 24/7',
+    artist: 'Lofi / Retro Beats',
+    album: 'Live Retro Chill & Cyberpunk Drive',
+    duration: 0,
+    hue: 320,
+    youtubeId: '4xDzrJKXOOY',
+    isYouTube: true,
+    isVideoStream: true,
+    isLive: true,
+    thumbnail: 'https://img.youtube.com/vi/4xDzrJKXOOY/hqdefault.jpg',
+    category: 'Video Stream',
+    genre: 'Synthwave',
+    quality: '1080p HD',
+    viewers: '12.8K',
+  },
+  {
+    id: 'stream-edm-1',
+    title: 'Global EDM & Festival 24/7',
+    artist: 'Club & Dance Live',
+    album: 'Electronic Dance Floor Live Stream',
+    duration: 0,
+    hue: 180,
+    youtubeId: '7nos63qPzQw',
+    isYouTube: true,
+    isVideoStream: true,
+    isLive: true,
+    thumbnail: 'https://img.youtube.com/vi/7nos63qPzQw/hqdefault.jpg',
+    category: 'Video Stream',
+    genre: 'EDM / Dance',
+    quality: '1080p HD',
+    viewers: '19.5K',
+  },
+]
 
 export const tracks = [
+  // === 24/7 LIVE VIDEO STREAMS ===
+  ...videoStreams,
+
   // === OFFLINE MASTER TRACK (Available 100% Offline Without Internet) ===
   {
     id: 'offline-master-1',

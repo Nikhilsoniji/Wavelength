@@ -13,6 +13,7 @@ import LandingPage from './components/LandingPage'
 import ImportYouTubeModal from './components/ImportYouTubeModal'
 import { WavelengthLogo } from './components/RealLogos'
 import AboutUs from './components/AboutUs'
+import VideoStreamPlayer from './components/VideoStreamPlayer'
 import {
   Sparkles,
   Search,
@@ -27,6 +28,7 @@ import {
   Wifi,
   WifiOff,
   X,
+  Tv,
 } from 'lucide-react'
 
 const AI_CARDS = [
@@ -61,6 +63,7 @@ const AI_CARDS = [
 
 const QUICK_FILTERS = [
   { id: 'all', label: 'All Hits' },
+  { id: 'video', label: '📺 Live Video' },
   { id: 'offline', label: '⚡ Offline Ready' },
   { id: 'bollywood', label: 'Bollywood' },
   { id: 'hollywood', label: 'Hollywood' },
@@ -146,6 +149,9 @@ export default function App() {
   }
 
   const recentTracks = useMemo(() => {
+    if (activeFilter === 'video') {
+      return library.filter((t) => t.isVideoStream).slice(0, 10)
+    }
     if (activeFilter === 'offline') {
       return library.filter((t) => t.isOfflineReady || t.isUploaded || t.src || t.blob).slice(0, 10)
     }
@@ -572,6 +578,7 @@ export default function App() {
       </main>
 
       <PlayerBar seekTo={seekTo} />
+      <VideoStreamPlayer />
       <Sidebar view={view} setView={setView} />
 
       <ImportYouTubeModal

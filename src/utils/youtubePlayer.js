@@ -57,6 +57,9 @@ function injectYouTubeScript() {
   })
 }
 
+let currentVideoMode = 'audio'
+let currentTargetRect = null
+
 function mountContainer() {
   if (typeof document === 'undefined') return null
   let container = document.getElementById('yt-audio-host-container')
@@ -73,6 +76,8 @@ function mountContainer() {
       opacity: '0.001',
       pointerEvents: 'none',
       zIndex: '-99999',
+      overflow: 'hidden',
+      backgroundColor: '#000',
     })
     const playerTarget = document.createElement('div')
     playerTarget.id = 'yt-player-iframe'
@@ -96,14 +101,14 @@ export const youtubePlayer = {
     }
 
     player = new window.YT.Player('yt-player-iframe', {
-      height: '200',
-      width: '200',
+      height: '100%',
+      width: '100%',
       playerVars: {
         autoplay: 0,
-        controls: 0,
-        disablekb: 1,
+        controls: 1,
+        disablekb: 0,
         enablejsapi: 1,
-        fs: 0,
+        fs: 1,
         iv_load_policy: 3,
         modestbranding: 1,
         playsinline: 1,
@@ -113,6 +118,14 @@ export const youtubePlayer = {
       events: {
         onReady: () => {
           isReady = true
+          // Ensure iframe element scales nicely inside host container
+          const iframeEl = document.querySelector('#yt-audio-host-container iframe')
+          if (iframeEl) {
+            iframeEl.style.width = '100%'
+            iframeEl.style.height = '100%'
+            iframeEl.style.display = 'block'
+            iframeEl.style.border = 'none'
+          }
           if (callbacks.onReady) callbacks.onReady()
           if (pendingVideoId) {
             youtubePlayer.loadVideo(pendingVideoId, pendingPlay)
@@ -136,6 +149,112 @@ export const youtubePlayer = {
       },
     })
   },
+
+  setVideoMode: (mode = 'audio', targetRect = null) => {
+    currentVideoMode = mode
+    currentTargetRect = targetRect
+    const container = mountContainer()
+    if (!container) return
+
+    if (mode === 'audio') {
+      Object.assign(container.style, {
+        position: 'fixed',
+        top: 'auto',
+        bottom: '-9000px',
+        left: '-9000px',
+        right: 'auto',
+        width: '200px',
+        height: '200px',
+        opacity: '0.001',
+        pointerEvents: 'none',
+        zIndex: '-99999',
+        borderRadius: '0px',
+        boxShadow: 'none',
+        transition: 'opacity 0.2s ease',
+      })
+    } else if (mode === 'embedded' && targetRect) {
+      Object.assign(container.style, {
+        position: 'fixed',
+        top: `${targetRect.top}px`,
+        left: `${targetRect.left}px`,
+        bottom: 'auto',
+        right: 'auto',
+        width: `${targetRect.width}px`,
+        height: `${targetRect.height}px`,
+        opacity: '1',
+        pointerEvents: 'auto',
+        zIndex: '9995',
+        borderRadius: '16px',
+        boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        overflow: 'hidden',
+      })
+    } else if (mode === 'pip') {
+      if (targetRect) {
+        Object.assign(container.style, {
+          position: 'fixed',
+          top: `${targetRect.top}px`,
+          left: `${targetRect.left}px`,
+          bottom: 'auto',
+          right: 'auto',
+          width: `${targetRect.width}px`,
+          height: `${targetRect.height}px`,
+          opacity: '1',
+          pointerEvents: 'auto',
+          zIndex: '9990',
+          borderRadius: '12px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+          overflow: 'hidden',
+        })
+      } else {
+        Object.assign(container.style, {
+          position: 'fixed',
+          top: 'auto',
+          left: 'auto',
+          bottom: '100px',
+          right: '20px',
+          width: '320px',
+          height: '180px',
+          opacity: '1',
+          pointerEvents: 'auto',
+          zIndex: '9990',
+          borderRadius: '12px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.6)',
+          transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+          overflow: 'hidden',
+        })
+      }
+    } else if (mode === 'fullscreen') {
+      Object.assign(container.style, {
+        position: 'fixed',
+        top: '0px',
+        left: '0px',
+        bottom: '0px',
+        right: '0px',
+        width: '100vw',
+        height: '100vh',
+        opacity: '1',
+        pointerEvents: 'auto',
+        zIndex: '99999',
+        borderRadius: '0px',
+        boxShadow: 'none',
+        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        overflow: 'hidden',
+      })
+    }
+
+    const iframeEl = container.querySelector('iframe')
+    if (iframeEl) {
+      iframeEl.style.width = '100%'
+      iframeEl.style.height = '100%'
+      iframeEl.style.display = 'block'
+      iframeEl.style.border = 'none'
+    }
+  },
+
+  getVideoMode: () => currentVideoMode,
+  getTargetRect: () => currentTargetRect,
 
   loadVideo: (videoId, autoPlay = true) => {
     currentVideoId = videoId

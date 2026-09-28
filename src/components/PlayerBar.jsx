@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Play,
   Pause,
@@ -14,8 +14,12 @@ import {
   Repeat1,
   ChevronDown,
   MoreHorizontal,
+  Tv,
+  Music,
+  Maximize2,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
+import { youtubePlayer } from '../utils/youtubePlayer'
 import AlbumArt from './AlbumArt'
 import WaveformSeek from './WaveformSeek'
 
@@ -43,13 +47,53 @@ function ExpandedPlayer({ onClose, seekTo }) {
   const toggleShuffle = usePlayerStore((s) => s.toggleShuffle)
   const repeat = usePlayerStore((s) => s.repeat)
   const cycleRepeat = usePlayerStore((s) => s.cycleRepeat)
+  const isVideoMode = usePlayerStore((s) => s.isVideoMode)
+  const videoDisplayMode = usePlayerStore((s) => s.videoDisplayMode)
+  const setVideoDisplayMode = usePlayerStore((s) => s.setVideoDisplayMode)
   const [liked, setLiked] = useState(false)
+  const videoSlotRef = useRef(null)
+
+  // Measure slot and mount YouTube iframe into expanded view
+  useEffect(() => {
+    if (isVideoMode && track?.isYouTube && videoDisplayMode === 'embedded' && videoSlotRef.current) {
+      const updateSlotRect = () => {
+        if (!videoSlotRef.current) return
+        const rect = videoSlotRef.current.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+          youtubePlayer.setVideoMode('embedded', {
+            top: Math.round(rect.top),
+            left: Math.round(rect.left),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+          })
+        }
+      }
+
+      updateSlotRect()
+      const timer = setTimeout(updateSlotRect, 60)
+      window.addEventListener('resize', updateSlotRect)
+      window.addEventListener('scroll', updateSlotRect, true)
+
+      return () => {
+        clearTimeout(timer)
+        window.removeEventListener('resize', updateSlotRect)
+        window.removeEventListener('scroll', updateSlotRect, true)
+      }
+    }
+  }, [isVideoMode, videoDisplayMode, track?.id])
 
   if (!track) return null
   const VolumeIcon = muted || volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2
 
+  const handleClose = () => {
+    if (isVideoMode) {
+      setVideoDisplayMode('pip')
+    }
+    onClose()
+  }
+
   return (
-    <div className="exp-overlay" onClick={onClose}>
+    <div className="exp-overlay" onClick={handleClose}>
       <div className="exp-panel" onClick={(e) => e.stopPropagation()}>
         {/* Ambient background */}
         <div
@@ -63,26 +107,68 @@ function ExpandedPlayer({ onClose, seekTo }) {
 
         {/* Header */}
         <div className="exp-header">
-          <button className="exp-header-btn" onClick={onClose} aria-label="Close player">
+          <button className="exp-header-btn" onClick={handleClose} aria-label="Close player">
             <ChevronDown size={24} />
           </button>
           <div className="exp-header-info">
-            <div className="exp-header-label">NOW PLAYING</div>
+            <div className="exp-header-label">
+              {isVideoMode && track.isYouTube ? 'VIDEO STREAM' : 'NOW PLAYING'}
+            </div>
           </div>
           <button className="exp-header-btn" aria-label="More options">
             <MoreHorizontal size={22} />
           </button>
         </div>
 
-        {/* Album Art */}
+        {/* Audio / Video Switcher Toggle */}
+        {track.isYouTube && (
+          <div className="exp-av-toggle-container">
+            <div className="exp-av-toggle">
+              <button
+                className={`exp-av-pill ${!isVideoMode || videoDisplayMode === 'audio' ? 'active' : ''}`}
+                onClick={() => setVideoDisplayMode('audio')}
+              >
+                <Music size={14} />
+                <span>Audio Only</span>
+              </button>
+              <button
+                className={`exp-av-pill ${isVideoMode && videoDisplayMode === 'embedded' ? 'active' : ''}`}
+                onClick={() => setVideoDisplayMode('embedded')}
+              >
+                <Tv size={14} />
+                <span>{track.isLive ? 'Live Stream' : 'Music Video'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Album Art / Video Slot */}
         <div className="exp-art-wrapper">
-          <AlbumArt
-            hue={track.hue || 280}
-            thumbnail={track.thumbnail || track.cover}
-            size={270}
-            rounded={20}
-            spinning={isPlaying}
-          />
+          {isVideoMode && track.isYouTube && videoDisplayMode === 'embedded' ? (
+            <div className="exp-video-slot-wrapper">
+              <div ref={videoSlotRef} className="exp-video-slot" />
+              <div className="exp-video-overlay-bar">
+                <span className="exp-video-badge">
+                  {track.isLive ? '🔴 LIVE STREAM' : '🎬 1080P HD'}
+                </span>
+                <button
+                  className="exp-video-expand-btn"
+                  onClick={() => setVideoDisplayMode('fullscreen')}
+                  title="Fullscreen Video"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <AlbumArt
+              hue={track.hue || 280}
+              thumbnail={track.thumbnail || track.cover}
+              size={270}
+              rounded={20}
+              spinning={isPlaying}
+            />
+          )}
         </div>
 
         {/* Track info + Like */}
@@ -90,7 +176,7 @@ function ExpandedPlayer({ onClose, seekTo }) {
           <div className="exp-track-info">
             <div className="exp-track-title">{track.title}</div>
             <div className="exp-track-artist">
-              {track.isLive ? 'Live Radio' : `${track.artist} — ${track.album}`}
+              {track.isLive ? 'Live Stream' : `${track.artist} — ${track.album}`}
             </div>
           </div>
           <button
@@ -199,15 +285,25 @@ export default function PlayerBar({ seekTo }) {
   const prev = usePlayerStore((s) => s.prev)
   const currentTime = usePlayerStore((s) => s.currentTime)
   const duration = usePlayerStore((s) => s.duration)
+  const isVideoMode = usePlayerStore((s) => s.isVideoMode)
+  const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
+  const setVideoDisplayMode = usePlayerStore((s) => s.setVideoDisplayMode)
 
   if (!track) return null
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
+
+  const handleOpenExpanded = () => {
+    if (isVideoMode) {
+      setVideoDisplayMode('embedded')
+    }
+    setExpanded(true)
+  }
 
   return (
     <>
       <div
         className="stitch-player-bar"
-        onClick={() => setExpanded(true)}
+        onClick={handleOpenExpanded}
         style={{ cursor: 'pointer' }}
       >
         <div className="spb-inner">
@@ -226,14 +322,33 @@ export default function PlayerBar({ seekTo }) {
           <div className="spb-meta">
             <div className="spb-title-row">
               <span className="spb-title">{track.title}</span>
-              {track.isLive && <span className="spb-live-chip">LIVE</span>}
+              {track.isVideoStream ? (
+                <span className="spb-live-chip spb-video-stream-chip">📺 VIDEO STREAM</span>
+              ) : track.isLive ? (
+                <span className="spb-live-chip">LIVE</span>
+              ) : null}
             </div>
             <div className="spb-artist">
-              {track.isLive ? 'Live Radio' : `${track.artist}`}
+              {track.isLive ? 'Live Stream' : `${track.artist}`}
             </div>
           </div>
 
           <div className="spb-controls" onClick={(e) => e.stopPropagation()}>
+            {track.isYouTube && (
+              <button
+                className={`spb-btn spb-video-toggle-btn ${isVideoMode ? 'video-active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toggleVideoMode('pip')
+                }}
+                title={isVideoMode ? 'Hide Video (Audio Continues)' : 'Watch Video Stream (PiP)'}
+                aria-label="Toggle Video Stream"
+              >
+                <Tv size={18} />
+                {isVideoMode && <span className="spb-video-glow-dot" />}
+              </button>
+            )}
+
             <button className="spb-btn" aria-label="Previous" onClick={prev}>
               <SkipBack size={18} />
             </button>
@@ -259,3 +374,4 @@ export default function PlayerBar({ seekTo }) {
     </>
   )
 }
+

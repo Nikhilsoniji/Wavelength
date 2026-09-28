@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import { tracks } from '../data/tracks'
+import { tracks } from '../data/tracks.js'
+import { youtubePlayer } from '../utils/youtubePlayer.js'
 
 // This store is the single source of truth for "what should be playing."
 // The actual <audio> element (in useAudioEngine) reads from and writes back
@@ -20,9 +21,54 @@ export const usePlayerStore = create((set, get) => ({
   repeat: 'off', // 'off' | 'all' | 'one'
   searchQuery: '',
   savedPlaylists: [],
-  isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+  isOnline: typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
   isOfflineSimulated: false,
   offlineWarning: null,
+
+  // Video Streaming State
+  isVideoMode: false,
+  videoDisplayMode: 'audio', // 'audio' | 'embedded' | 'pip' | 'fullscreen'
+  videoTargetRect: null,
+
+  setVideoDisplayMode: (mode, targetRect = null) => {
+    set({
+      videoDisplayMode: mode,
+      isVideoMode: mode !== 'audio',
+      videoTargetRect: targetRect,
+    })
+    youtubePlayer.setVideoMode(mode, targetRect)
+  },
+
+  toggleVideoMode: (defaultMode = 'pip') => {
+    const { isVideoMode, videoDisplayMode } = get()
+    if (isVideoMode) {
+      set({ isVideoMode: false, videoDisplayMode: 'audio' })
+      youtubePlayer.setVideoMode('audio')
+    } else {
+      const newMode = videoDisplayMode !== 'audio' ? videoDisplayMode : defaultMode
+      set({ isVideoMode: true, videoDisplayMode: newMode })
+      youtubePlayer.setVideoMode(newMode)
+    }
+  },
+
+  playVideoStream: (trackOrId, initialMode = 'pip') => {
+    const target = typeof trackOrId === 'object'
+      ? trackOrId
+      : get().library.find((t) => t.id === trackOrId)
+    if (!target) return
+
+    const { library } = get()
+    if (!library.some((t) => t.id === target.id)) {
+      set({ library: [target, ...library], queue: [target.id, ...get().queue] })
+    }
+
+    get().play(target.id)
+    set({
+      isVideoMode: true,
+      videoDisplayMode: initialMode,
+    })
+    youtubePlayer.setVideoMode(initialMode)
+  },
 
   setIsOnline: (status) => set({ isOnline: status }),
   toggleOfflineSimulation: () =>
@@ -41,6 +87,13 @@ export const usePlayerStore = create((set, get) => ({
   play: (id) => {
     const targetId = id || get().currentId
     const targetTrack = get().library.find((t) => t.id === targetId)
+
+    if (targetTrack?.isVideoStream) {
+      if (!get().isVideoMode) {
+        set({ isVideoMode: true, videoDisplayMode: 'pip' })
+        youtubePlayer.setVideoMode('pip')
+      }
+    }
 
     // When offline, if user clicks a YouTube-only stream, fallback to offline audio
     if (get().isEffectiveOffline() && targetTrack?.isYouTube && !targetTrack.src) {
