@@ -1,6 +1,27 @@
 import { create } from 'zustand'
-import { tracks } from '../data/tracks.js'
+import { tracks, enrichTrackMetadata } from '../data/tracks.js'
 import { youtubePlayer } from '../utils/youtubePlayer.js'
+
+function buildTracksMap(list) {
+  const map = new Map()
+  for (let i = 0; i < list.length; i++) {
+    map.set(list[i].id, list[i])
+  }
+  return map
+}
+
+function buildQueueMap(ids) {
+  const map = new Map()
+  for (let i = 0; i < ids.length; i++) {
+    map.set(ids[i], i)
+  }
+  return map
+}
+
+const initialTracks = tracks.map(enrichTrackMetadata)
+const initialQueue = initialTracks.map((t) => t.id)
+const initialTracksById = buildTracksMap(initialTracks)
+const initialQueueMap = buildQueueMap(initialQueue)
 
 // This store is the single source of truth for "what should be playing."
 // The actual <audio> element (in useAudioEngine) reads from and writes back
@@ -9,12 +30,14 @@ import { youtubePlayer } from '../utils/youtubePlayer.js'
 // and without ever needing to remount the <audio> tag itself.
 
 export const usePlayerStore = create((set, get) => ({
-  library: tracks,
-  queue: tracks.map((t) => t.id),
-  currentId: tracks[0].id,
+  library: initialTracks,
+  tracksById: initialTracksById,
+  queue: initialQueue,
+  queueIndexMap: initialQueueMap,
+  currentId: initialTracks[0]?.id || '',
   isPlaying: false,
   currentTime: 0,
-  duration: tracks[0].duration,
+  duration: initialTracks[0]?.duration || 180,
   volume: 0.8,
   muted: false,
   shuffle: false,
@@ -54,15 +77,25 @@ export const usePlayerStore = create((set, get) => ({
   playVideoStream: (trackOrId, initialMode = 'pip') => {
     const target = typeof trackOrId === 'object'
       ? trackOrId
-      : get().library.find((t) => t.id === trackOrId)
+      : get().tracksById.get(trackOrId) || get().library.find((t) => t.id === trackOrId)
     if (!target) return
 
-    const { library } = get()
-    if (!library.some((t) => t.id === target.id)) {
-      set({ library: [target, ...library], queue: [target.id, ...get().queue] })
+    const enriched = enrichTrackMetadata(target)
+    const { library, tracksById } = get()
+    if (!tracksById.has(enriched.id)) {
+      const updatedLib = [enriched, ...library]
+      const updatedMap = new Map(tracksById)
+      updatedMap.set(enriched.id, enriched)
+      const updatedQueue = [enriched.id, ...get().queue]
+      set({
+        library: updatedLib,
+        tracksById: updatedMap,
+        queue: updatedQueue,
+        queueIndexMap: buildQueueMap(updatedQueue),
+      })
     }
 
-    get().play(target.id)
+    get().play(enriched.id)
     set({
       isVideoMode: true,
       videoDisplayMode: initialMode,
@@ -79,14 +112,15 @@ export const usePlayerStore = create((set, get) => ({
   dismissOfflineWarning: () => set({ offlineWarning: null }),
   isEffectiveOffline: () => !get().isOnline || get().isOfflineSimulated,
 
+  // O(1) Instant Hash Map Lookup
   currentTrack: () => {
-    const { library, currentId } = get()
-    return library.find((t) => t.id === currentId) ?? library[0]
+    const { tracksById, currentId, library } = get()
+    return tracksById.get(currentId) || library[0]
   },
 
   play: (id) => {
     const targetId = id || get().currentId
-    const targetTrack = get().library.find((t) => t.id === targetId)
+    const targetTrack = get().tracksById.get(targetId) || get().library.find((t) => t.id === targetId)
 
     if (targetTrack?.isVideoStream) {
       if (!get().isVideoMode) {
@@ -133,30 +167,29 @@ export const usePlayerStore = create((set, get) => ({
       repeat: s.repeat === 'off' ? 'all' : s.repeat === 'all' ? 'one' : 'off',
     })),
 
-  setQueue: (ids) => set({ queue: ids }),
+  // O(1) Queue indexing
+  setQueue: (ids) => set({ queue: ids, queueIndexMap: buildQueueMap(ids) }),
 
   next: () => {
-    const { queue, currentId, shuffle, library } = get()
+    const { queue, queueIndexMap, currentId, shuffle } = get()
     if (shuffle) {
       const others = queue.filter((id) => id !== currentId)
       const randomId = others[Math.floor(Math.random() * others.length)] ?? currentId
       set({ currentId: randomId, currentTime: 0, isPlaying: true })
       return
     }
-    const idx = queue.indexOf(currentId)
+    const idx = queueIndexMap?.get(currentId) ?? queue.indexOf(currentId)
     const nextId = queue[(idx + 1) % queue.length]
     set({ currentId: nextId, currentTime: 0, isPlaying: true })
   },
 
   prev: () => {
-    const { queue, currentId, currentTime } = get()
-    // Scrubbing convention: if we're more than 3s into the track, restart it
-    // instead of jumping back a track (matches most real players).
+    const { queue, queueIndexMap, currentId, currentTime } = get()
     if (currentTime > 3) {
       set({ currentTime: 0 })
       return
     }
-    const idx = queue.indexOf(currentId)
+    const idx = queueIndexMap?.get(currentId) ?? queue.indexOf(currentId)
     const prevId = queue[(idx - 1 + queue.length) % queue.length]
     set({ currentId: prevId, currentTime: 0, isPlaying: true })
   },
@@ -189,11 +222,15 @@ export const usePlayerStore = create((set, get) => ({
 
       const existingIds = new Set(validSaved.map((t) => t.id))
       const defaultTracks = tracks.filter((t) => !existingIds.has(t.id))
-      const combinedLibrary = [...validSaved, ...defaultTracks]
+      const combinedLibrary = [...validSaved, ...defaultTracks].map(enrichTrackMetadata)
+      const tracksById = buildTracksMap(combinedLibrary)
+      const queue = combinedLibrary.map((t) => t.id)
 
       set({
         library: combinedLibrary,
-        queue: combinedLibrary.map((t) => t.id),
+        tracksById,
+        queue,
+        queueIndexMap: buildQueueMap(queue),
       })
     } catch (err) {
       console.error('Failed to load saved tracks from IndexedDB:', err)
@@ -215,12 +252,14 @@ export const usePlayerStore = create((set, get) => ({
 
       set((state) => {
         const existingIds = new Set(state.library.map((t) => t.id))
-        const newTracks = allPlaylistTracks.filter((t) => !existingIds.has(t.id))
+        const newTracks = allPlaylistTracks.filter((t) => !existingIds.has(t.id)).map(enrichTrackMetadata)
         const updatedLibrary = newTracks.length > 0 ? [...newTracks, ...state.library] : state.library
+        const updatedMap = newTracks.length > 0 ? buildTracksMap(updatedLibrary) : state.tracksById
 
         return {
           savedPlaylists: playlists,
           library: updatedLibrary,
+          tracksById: updatedMap,
         }
       })
     } catch (err) {
@@ -241,12 +280,14 @@ export const usePlayerStore = create((set, get) => ({
         const updatedPlaylists = [playlist, ...existing]
 
         const existingIds = new Set(state.library.map((t) => t.id))
-        const newTracks = (playlist.tracks || []).filter((t) => !existingIds.has(t.id))
+        const newTracks = (playlist.tracks || []).filter((t) => !existingIds.has(t.id)).map(enrichTrackMetadata)
         const updatedLibrary = newTracks.length > 0 ? [...newTracks, ...state.library] : state.library
+        const updatedMap = newTracks.length > 0 ? buildTracksMap(updatedLibrary) : state.tracksById
 
         return {
           savedPlaylists: updatedPlaylists,
           library: updatedLibrary,
+          tracksById: updatedMap,
         }
       })
     } catch (err) {
@@ -255,7 +296,7 @@ export const usePlayerStore = create((set, get) => ({
   },
 
   playPlaylist: (playlistOrId, startTrackIndex = 0) => {
-    const { savedPlaylists, library } = get()
+    const { savedPlaylists, library, tracksById } = get()
     const targetPlaylist = typeof playlistOrId === 'object'
       ? playlistOrId
       : savedPlaylists.find((p) => p.id === playlistOrId || p.playlistId === playlistOrId)
@@ -265,17 +306,20 @@ export const usePlayerStore = create((set, get) => ({
       return
     }
 
-    const playlistTracks = targetPlaylist.tracks
+    const playlistTracks = targetPlaylist.tracks.map(enrichTrackMetadata)
     const existingIds = new Set(library.map((t) => t.id))
     const missingTracks = playlistTracks.filter((t) => !existingIds.has(t.id))
     const updatedLibrary = missingTracks.length > 0 ? [...missingTracks, ...library] : library
+    const updatedMap = missingTracks.length > 0 ? buildTracksMap(updatedLibrary) : tracksById
 
     const queue = playlistTracks.map((t) => t.id)
     const startTrack = playlistTracks[startTrackIndex] || playlistTracks[0]
 
     set({
       library: updatedLibrary,
+      tracksById: updatedMap,
       queue,
+      queueIndexMap: buildQueueMap(queue),
       currentId: startTrack.id,
       isPlaying: true,
       currentTime: 0,
@@ -304,36 +348,39 @@ export const usePlayerStore = create((set, get) => ({
       throw new Error('No tracks found in this playlist.')
     }
 
+    const enrichedTracks = result.tracks.map(enrichTrackMetadata)
     const playlistEntity = {
       id: result.id || `yt_pl_${result.playlistId || Date.now()}`,
       playlistId: result.playlistId || '',
       title: result.title || 'YouTube Playlist',
       author: result.author || 'YouTube',
-      thumbnail: result.thumbnail || result.tracks[0]?.thumbnail || '',
-      trackCount: result.tracks.length,
-      tracks: result.tracks,
+      thumbnail: result.thumbnail || enrichedTracks[0]?.thumbnail || '',
+      trackCount: enrichedTracks.length,
+      tracks: enrichedTracks,
       savedAt: Date.now(),
       url: typeof urlOrId === 'string' ? urlOrId : '',
       isYouTube: true,
     }
 
     // Save tracks & playlist to IndexedDB + localStorage forever
-    await saveYouTubeTracks(result.tracks)
+    await saveYouTubeTracks(enrichedTracks)
     await savePlaylistRecord(playlistEntity)
 
     set((state) => {
       const existingIds = new Set(state.library.map((t) => t.id))
-      const newTracks = result.tracks.filter((t) => !existingIds.has(t.id))
+      const newTracks = enrichedTracks.filter((t) => !existingIds.has(t.id))
 
       const existingPlaylists = state.savedPlaylists.filter((p) => p.id !== playlistEntity.id)
       const updatedPlaylists = [playlistEntity, ...existingPlaylists]
 
       if (newTracks.length === 0) {
-        if (autoPlay && result.tracks[0]) {
+        if (autoPlay && enrichedTracks[0]) {
+          const queue = enrichedTracks.map((t) => t.id)
           return {
             savedPlaylists: updatedPlaylists,
-            queue: result.tracks.map((t) => t.id),
-            currentId: result.tracks[0].id,
+            queue,
+            queueIndexMap: buildQueueMap(queue),
+            currentId: enrichedTracks[0].id,
             isPlaying: true,
             currentTime: 0,
           }
@@ -344,12 +391,16 @@ export const usePlayerStore = create((set, get) => ({
       }
 
       const updatedLibrary = [...newTracks, ...state.library]
+      const updatedMap = buildTracksMap(updatedLibrary)
       const firstId = newTracks[0]?.id || state.currentId
+      const queue = autoPlay ? enrichedTracks.map((t) => t.id) : updatedLibrary.map((t) => t.id)
 
       return {
         savedPlaylists: updatedPlaylists,
         library: updatedLibrary,
-        queue: autoPlay ? result.tracks.map((t) => t.id) : updatedLibrary.map((t) => t.id),
+        tracksById: updatedMap,
+        queue,
+        queueIndexMap: buildQueueMap(queue),
         currentId: autoPlay ? firstId : state.currentId,
         isPlaying: autoPlay ? true : state.isPlaying,
         currentTime: autoPlay ? 0 : state.currentTime,
@@ -387,17 +438,22 @@ export const usePlayerStore = create((set, get) => ({
 
       await saveUploadedTrack(trackMetadata, file)
 
-      const newTrack = {
+      const newTrack = enrichTrackMetadata({
         ...trackMetadata,
         src: objectUrl,
         blobUrl: objectUrl,
-      }
+      })
 
       set((state) => {
         const updatedLibrary = [newTrack, ...state.library]
+        const updatedMap = new Map(state.tracksById)
+        updatedMap.set(newTrack.id, newTrack)
+        const updatedQueue = updatedLibrary.map((t) => t.id)
         return {
           library: updatedLibrary,
-          queue: updatedLibrary.map((t) => t.id),
+          tracksById: updatedMap,
+          queue: updatedQueue,
+          queueIndexMap: buildQueueMap(updatedQueue),
           currentId: id,
           isPlaying: true,
           currentTime: 0,
@@ -414,18 +470,22 @@ export const usePlayerStore = create((set, get) => ({
       await deleteUploadedTrack(id)
 
       set((state) => {
-        const target = state.library.find((t) => t.id === id)
+        const target = state.tracksById.get(id) || state.library.find((t) => t.id === id)
         if (target && target.blobUrl) {
           URL.revokeObjectURL(target.blobUrl)
         }
 
         const updatedLibrary = state.library.filter((t) => t.id !== id)
+        const updatedMap = new Map(state.tracksById)
+        updatedMap.delete(id)
         const updatedQueue = state.queue.filter((qId) => qId !== id)
         const nextCurrentId = state.currentId === id ? (updatedLibrary[0]?.id ?? null) : state.currentId
 
         return {
           library: updatedLibrary,
+          tracksById: updatedMap,
           queue: updatedQueue,
+          queueIndexMap: buildQueueMap(updatedQueue),
           currentId: nextCurrentId,
           isPlaying: state.currentId === id ? false : state.isPlaying,
         }
@@ -443,13 +503,17 @@ export const usePlayerStore = create((set, get) => ({
 
       set((state) => {
         const existingIds = new Set(state.library.map((t) => t.id))
-        const newStations = fetchedStations.filter((s) => !existingIds.has(s.id))
+        const newStations = fetchedStations.filter((s) => !existingIds.has(s.id)).map(enrichTrackMetadata)
         if (newStations.length === 0) return {}
 
         const updatedLibrary = [...state.library, ...newStations]
+        const updatedMap = buildTracksMap(updatedLibrary)
+        const queue = updatedLibrary.map((t) => t.id)
         return {
           library: updatedLibrary,
-          queue: updatedLibrary.map((t) => t.id),
+          tracksById: updatedMap,
+          queue,
+          queueIndexMap: buildQueueMap(queue),
         }
       })
     } catch (err) {

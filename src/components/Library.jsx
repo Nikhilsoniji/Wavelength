@@ -29,27 +29,36 @@ export default function Library({ onOpenYouTubeModal }) {
 
     const q = searchQuery.trim().toLowerCase()
     if (!q) return list
-    return list.filter(
-      (t) =>
+
+    // O(1) string search using pre-computed _searchToken instead of 4x lowercase conversions
+    return list.filter((t) => {
+      if (t._searchToken) return t._searchToken.includes(q)
+      return (
         t.title?.toLowerCase().includes(q) ||
         t.artist?.toLowerCase().includes(q) ||
         t.album?.toLowerCase().includes(q) ||
         t.genre?.toLowerCase().includes(q)
-    )
+      )
+    })
   }, [library, searchQuery, activeCategoryFilter, activePlaylist])
 
-  const offlineCount = useMemo(
-    () => library.filter((t) => t.isOfflineReady || t.isUploaded || t.src || t.blob).length,
-    [library]
-  )
-  const bollywoodCount = useMemo(
-    () => library.filter((t) => t.category === 'Bollywood').length,
-    [library]
-  )
-  const hollywoodCount = useMemo(
-    () => library.filter((t) => t.category === 'Hollywood').length,
-    [library]
-  )
+  // Single-pass bucket aggregation: O(N) single loop instead of 3x full array filters
+  const counts = useMemo(() => {
+    let offline = 0
+    let bollywood = 0
+    let hollywood = 0
+    let video = 0
+
+    for (let i = 0; i < library.length; i++) {
+      const t = library[i]
+      if (t.isOfflineReady || t.isUploaded || t.src || t.blob) offline++
+      if (t.category === 'Bollywood') bollywood++
+      if (t.category === 'Hollywood') hollywood++
+      if (t.isVideoStream) video++
+    }
+
+    return { offline, bollywood, hollywood, video }
+  }, [library])
 
   return (
     <div className="library-page">
@@ -88,28 +97,28 @@ export default function Library({ onOpenYouTubeModal }) {
         >
           All Hits ({library.length})
         </button>
-        {offlineCount > 0 && (
+        {counts.offline > 0 && (
           <button
             className={`lib-playlist-chip lib-offline-chip ${activeCategoryFilter === 'offline' ? 'active' : ''}`}
             onClick={() => setActiveCategoryFilter('offline')}
           >
-            ⚡ Offline Ready ({offlineCount})
+            ⚡ Offline Ready ({counts.offline})
           </button>
         )}
-        {bollywoodCount > 0 && (
+        {counts.bollywood > 0 && (
           <button
             className={`lib-playlist-chip ${activeCategoryFilter === 'bollywood' ? 'active' : ''}`}
             onClick={() => setActiveCategoryFilter('bollywood')}
           >
-            Bollywood ({bollywoodCount})
+            Bollywood ({counts.bollywood})
           </button>
         )}
-        {hollywoodCount > 0 && (
+        {counts.hollywood > 0 && (
           <button
             className={`lib-playlist-chip ${activeCategoryFilter === 'hollywood' ? 'active' : ''}`}
             onClick={() => setActiveCategoryFilter('hollywood')}
           >
-            Hollywood ({hollywoodCount})
+            Hollywood ({counts.hollywood})
           </button>
         )}
         {savedPlaylists.map((pl) => (

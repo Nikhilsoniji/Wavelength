@@ -1,7 +1,36 @@
 // Curated library of the latest and greatest Bollywood & Hollywood hits, plus 24/7 Live Video Streams.
 // Seamlessly powered by Wavelength's high-fidelity audio & video engine.
 
-export const videoStreams = [
+export function getFormattedDuration(duration, isLive = false) {
+  if (isLive) return 'LIVE'
+  if (!duration || !Number.isFinite(duration) || duration <= 0) return '0:00'
+
+  const totalSecs = Math.floor(duration)
+  const hours = Math.floor(totalSecs / 3600)
+  const minutes = Math.floor((totalSecs % 3600) / 60)
+  const seconds = totalSecs % 60
+  const secStr = seconds < 10 ? '0' + seconds : String(seconds)
+
+  if (hours > 0) {
+    const minStr = minutes < 10 ? '0' + minutes : String(minutes)
+    return `${hours}:${minStr}:${secStr}`
+  }
+
+  return `${minutes}:${secStr}`
+}
+
+export function enrichTrackMetadata(track) {
+  if (!track) return track
+  return {
+    ...track,
+    formattedDuration: track.formattedDuration || getFormattedDuration(track.duration, track.isLive),
+    _searchToken:
+      track._searchToken ||
+      `${track.title || ''} ${track.artist || ''} ${track.album || ''} ${track.genre || ''}`.toLowerCase(),
+  }
+}
+
+const rawVideoStreams = [
   {
     id: 'stream-lofi-1',
     title: 'Lofi Hip Hop Radio 24/7',
@@ -72,7 +101,9 @@ export const videoStreams = [
   },
 ]
 
-export const tracks = [
+export const videoStreams = rawVideoStreams.map(enrichTrackMetadata)
+
+const rawTracks = [
   // === 24/7 LIVE VIDEO STREAMS ===
   ...videoStreams,
 
@@ -461,8 +492,18 @@ export const tracks = [
   },
 ]
 
+// Pre-enriched track library with pre-calculated O(1) formatted durations and search tokens
+export const tracks = rawTracks.map(enrichTrackMetadata)
+
+// O(1) Memoization Cache for Waveforms across render cycles
+const waveformCache = new Map()
+
 // Deterministic pseudo-random waveform bar heights, seeded per track
 export function waveformFor(trackId, bars = 64) {
+  const cacheKey = `${trackId}_${bars}`
+  const cached = waveformCache.get(cacheKey)
+  if (cached) return cached
+
   let seed = 0
   const idStr = String(trackId || '')
   for (let i = 0; i < idStr.length; i++) seed = (seed * 31 + idStr.charCodeAt(i)) >>> 0
@@ -473,5 +514,7 @@ export function waveformFor(trackId, bars = 64) {
     const envelope = 0.35 + 0.65 * Math.sin((Math.PI * i) / bars)
     values.push(0.15 + base * 0.85 * envelope)
   }
+  waveformCache.set(cacheKey, values)
   return values
 }
+

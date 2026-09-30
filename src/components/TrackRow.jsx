@@ -1,25 +1,17 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Play, Pause, Trash2, Heart, Download } from 'lucide-react'
 import AlbumArt from './AlbumArt'
 import { usePlayerStore } from '../store/usePlayerStore'
+import { getFormattedDuration } from '../data/tracks'
 
-function formatDuration(seconds) {
-  if (!seconds || !Number.isFinite(seconds)) return '0:00'
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
-export default function TrackRow({ track, index, dragHandleProps, style }) {
-  const currentId = usePlayerStore((s) => s.currentId)
-  const isPlaying = usePlayerStore((s) => s.isPlaying)
+function TrackRow({ track, index, dragHandleProps, style }) {
+  // O(1) Boolean selectors: only re-renders the specific row whose active status changes!
+  const isCurrent = usePlayerStore((s) => s.currentId === track.id)
+  const isCurrentlyPlaying = usePlayerStore((s) => s.currentId === track.id && s.isPlaying)
   const play = usePlayerStore((s) => s.play)
   const toggle = usePlayerStore((s) => s.toggle)
   const deleteTrack = usePlayerStore((s) => s.deleteTrack)
   const [liked, setLiked] = useState(false)
-
-  const isCurrent = track.id === currentId
-  const isCurrentlyPlaying = isCurrent && isPlaying
 
   const handlePlayClick = (e) => {
     e.stopPropagation()
@@ -29,11 +21,15 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
 
   const handleDelete = (e) => {
     e.stopPropagation()
-    const label = track.isYouTube ? 'YouTube track' : 'uploaded track'
     if (window.confirm(`Delete "${track.title}" from your library?`)) {
       deleteTrack(track.id)
     }
   }
+
+  // O(1) property read with fast fallback
+  const durationDisplay =
+    track.formattedDuration ||
+    (track.isLive ? 'LIVE' : getFormattedDuration(track.duration, track.isLive))
 
   return (
     <div
@@ -73,9 +69,10 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
       <div className="track-meta">
         <div className="track-title">
           {track.title}
+          {track.isVideoStream && <span className="track-yt-badge">Video Stream</span>}
           {track.isOfflineReady && <span className="track-offline-badge">Offline Ready</span>}
           {track.isUploaded && <span className="track-uploaded-badge">Offline File</span>}
-          {track.isYouTube && <span className="track-yt-badge">YouTube</span>}
+          {track.isYouTube && !track.isVideoStream && <span className="track-yt-badge">YouTube</span>}
         </div>
         <div className="track-artist">
           {track.artist}
@@ -109,7 +106,7 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
           </a>
         )}
 
-        <div className="track-duration">{track.isLive ? 'Live' : formatDuration(track.duration)}</div>
+        <div className="track-duration">{durationDisplay}</div>
 
         {(track.isUploaded || track.isYouTube) && (
           <button
@@ -124,3 +121,6 @@ export default function TrackRow({ track, index, dragHandleProps, style }) {
     </div>
   )
 }
+
+export default memo(TrackRow)
+
