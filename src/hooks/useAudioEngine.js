@@ -236,6 +236,10 @@ export function useAudioEngine() {
     } catch {}
   }, [isPlaying])
 
+  useEffect(() => {
+    usePlayerStore.getState().setSeekToHandler(seekTo)
+  }, [seekTo])
+
   return { seekTo }
 }
 

@@ -17,6 +17,7 @@ import {
   Tv,
   Music,
   Maximize2,
+  Mic2,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { youtubePlayer } from '../utils/youtubePlayer'
@@ -50,6 +51,7 @@ function ExpandedPlayer({ onClose, seekTo }) {
   const isVideoMode = usePlayerStore((s) => s.isVideoMode)
   const videoDisplayMode = usePlayerStore((s) => s.videoDisplayMode)
   const setVideoDisplayMode = usePlayerStore((s) => s.setVideoDisplayMode)
+  const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
   const [liked, setLiked] = useState(false)
   const videoSlotRef = useRef(null)
 
@@ -258,6 +260,17 @@ function ExpandedPlayer({ onClose, seekTo }) {
             aria-label="Volume"
           />
           <div className="exp-extras">
+            <button
+              className="exp-ctrl-btn exp-lyrics-btn"
+              onClick={() => {
+                onClose()
+                setIsLyricsOpen(true)
+              }}
+              title="Real-time Synced Lyrics"
+              aria-label="Real-time Synced Lyrics"
+            >
+              <Mic2 size={18} />
+            </button>
             {track.src && !track.isYouTube && (
               <a
                 className="exp-ctrl-btn"
@@ -288,6 +301,8 @@ export default function PlayerBar({ seekTo }) {
   const isVideoMode = usePlayerStore((s) => s.isVideoMode)
   const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
   const setVideoDisplayMode = usePlayerStore((s) => s.setVideoDisplayMode)
+  const isLyricsOpen = usePlayerStore((s) => s.isLyricsOpen)
+  const toggleLyrics = usePlayerStore((s) => s.toggleLyrics)
 
   if (!track) return null
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
@@ -334,6 +349,19 @@ export default function PlayerBar({ seekTo }) {
           </div>
 
           <div className="spb-controls" onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`spb-btn spb-lyrics-btn ${isLyricsOpen ? 'lyrics-active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleLyrics()
+              }}
+              title={isLyricsOpen ? 'Close Lyrics' : 'Live Synchronized Lyrics'}
+              aria-label="Live Synchronized Lyrics"
+            >
+              <Mic2 size={18} />
+              {isLyricsOpen && <span className="spb-lyrics-glow-dot" />}
+            </button>
+
             {track.isYouTube && (
               <button
                 className={`spb-btn spb-video-toggle-btn ${isVideoMode ? 'video-active' : ''}`}

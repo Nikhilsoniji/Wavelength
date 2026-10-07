@@ -14,6 +14,10 @@ import ImportYouTubeModal from './components/ImportYouTubeModal'
 import { WavelengthLogo } from './components/RealLogos'
 import AboutUs from './components/AboutUs'
 import VideoStreamPlayer from './components/VideoStreamPlayer'
+import LyricsView from './components/LyricsView'
+import Hero3DVisualizer from './components/Hero3DVisualizer'
+import AlbumArt from './components/AlbumArt'
+import YouTubeMusicBrowser from './components/YouTubeMusicBrowser'
 import {
   Sparkles,
   Search,
@@ -29,6 +33,8 @@ import {
   WifiOff,
   X,
   Tv,
+  Mic2,
+  SkipForward,
 } from 'lucide-react'
 
 const AI_CARDS = [
@@ -63,6 +69,7 @@ const AI_CARDS = [
 
 const QUICK_FILTERS = [
   { id: 'all', label: 'All Hits' },
+  { id: 'ytmusic', label: '🔴 YouTube Music' },
   { id: 'video', label: '📺 Live Video' },
   { id: 'offline', label: '⚡ Offline Ready' },
   { id: 'bollywood', label: 'Bollywood' },
@@ -115,6 +122,10 @@ export default function App() {
   const toggleOfflineSimulation = usePlayerStore((s) => s.toggleOfflineSimulation)
   const offlineWarning = usePlayerStore((s) => s.offlineWarning)
   const dismissOfflineWarning = usePlayerStore((s) => s.dismissOfflineWarning)
+  const next = usePlayerStore((s) => s.next)
+  const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
+  const isVideoMode = usePlayerStore((s) => s.isVideoMode)
+  const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
 
   const fileInputRef = useRef(null)
 
@@ -209,9 +220,9 @@ export default function App() {
             {isEffectiveOffline ? <WifiOff size={18} className="text-amber" /> : <Wifi size={18} />}
           </button>
           <button
-            className="stitch-topbar-btn yt-topbar-btn"
-            onClick={() => setIsYouTubeModalOpen(true)}
-            title="Import YouTube Playlist"
+            className={`stitch-topbar-btn yt-topbar-btn ${view === 'ytmusic' ? 'active' : ''}`}
+            onClick={() => setView('ytmusic')}
+            title="YouTube Music Web Browser & Cloner"
           >
             <Youtube size={18} className="yt-icon-topbar" />
           </button>
@@ -298,20 +309,41 @@ export default function App() {
               </p>
             </div>
 
-            {/* Now Playing Banner */}
+            {/* Elevated Spatial Hero Banner with 3D Visualizer */}
             <section className="hero-spatial-banner">
+              <Hero3DVisualizer isPlaying={isPlaying} hue={track?.hue || 280} />
+
+              <div
+                className="hero-banner-backdrop"
+                style={{
+                  background: `
+                    radial-gradient(circle at 80% 25%, hsl(${track?.hue || 280} 85% 35% / 0.35), transparent 60%),
+                    radial-gradient(circle at 20% 75%, hsl(${((track?.hue || 280) + 45) % 360} 75% 25% / 0.25), transparent 65%)
+                  `,
+                }}
+              />
+
               <div className="hero-banner-grid">
                 <div className="hero-banner-info">
-                  <div className="hero-banner-tag">
-                    <Sparkles size={14} />
-                    <span>NOW PLAYING</span>
+                  <div className="hero-banner-top-badges">
+                    <div className="hero-banner-tag">
+                      <Sparkles size={13} className="hero-tag-icon" />
+                      <span>{isPlaying ? 'NOW PLAYING' : 'AUDIO HORIZON'}</span>
+                    </div>
+                    <span className="hero-audio-format-pill">
+                      24-BIT / 96kHz LOSSLESS
+                    </span>
+                    {track?.isOfflineReady && (
+                      <span className="hero-offline-pill">OFFLINE READY</span>
+                    )}
                   </div>
+
                   <h2 className="hero-banner-title">
-                    {track ? track.title : 'Start Listening'}
+                    {track ? track.title : 'Wavelength Horizon'}
                   </h2>
                   <p className="hero-banner-desc">
                     {track
-                      ? `${track.artist} — ${track.album}`
+                      ? `${track.artist} • ${track.album}`
                       : 'Pick a track from your library or explore curated mixes below.'}
                   </p>
 
@@ -332,8 +364,60 @@ export default function App() {
                         </>
                       )}
                     </button>
+
+                    <button
+                      className="hero-secondary-btn"
+                      onClick={() => setIsLyricsOpen(true)}
+                      title="Open Live Synchronized Lyrics"
+                    >
+                      <Mic2 size={16} />
+                      <span>Lyrics</span>
+                    </button>
+
+                    {track?.isYouTube && (
+                      <button
+                        className={`hero-secondary-btn ${isVideoMode ? 'active' : ''}`}
+                        onClick={() => toggleVideoMode('pip')}
+                        title="Watch Video Stream"
+                      >
+                        <Tv size={16} />
+                        <span>Video</span>
+                      </button>
+                    )}
+
+                    <button
+                      className="hero-icon-only-btn"
+                      onClick={next}
+                      title="Next Track"
+                    >
+                      <SkipForward size={18} />
+                    </button>
                   </div>
                 </div>
+
+                {/* Right Vinyl & Sleeve Disc Display */}
+                {track && (
+                  <div className="hero-banner-art-wrap">
+                    <div className={`hero-vinyl-sleeve ${isPlaying ? 'playing' : ''}`}>
+                      <div
+                        className="hero-vinyl-record"
+                        style={{ '--record-hue': track.hue || 280 }}
+                      >
+                        <div className="hero-vinyl-grooves" />
+                        <div className="hero-vinyl-center" />
+                      </div>
+                      <div className="hero-vinyl-cover">
+                        <AlbumArt
+                          hue={track.hue || 280}
+                          thumbnail={track.thumbnail || track.cover}
+                          size={130}
+                          rounded={16}
+                          spinning={false}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -347,6 +431,7 @@ export default function App() {
                     setActiveFilter(f.id)
                     if (f.id === 'radio') setView('radio')
                     if (f.id === 'ambient') setView('aidj')
+                    if (f.id === 'ytmusic') setView('ytmusic')
                   }}
                 >
                   {f.label}
@@ -575,10 +660,16 @@ export default function App() {
             />
           </div>
         )}
+        {view === 'ytmusic' && (
+          <div className="stitch-view-page ytm-view-container">
+            <YouTubeMusicBrowser />
+          </div>
+        )}
       </main>
 
       <PlayerBar seekTo={seekTo} />
       <VideoStreamPlayer />
+      <LyricsView />
       <Sidebar view={view} setView={setView} />
 
       <ImportYouTubeModal

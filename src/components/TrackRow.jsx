@@ -1,5 +1,5 @@
 import { useState, memo } from 'react'
-import { Play, Pause, Trash2, Heart, Download } from 'lucide-react'
+import { Play, Pause, Trash2, Heart, Download, Mic2 } from 'lucide-react'
 import AlbumArt from './AlbumArt'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { getFormattedDuration } from '../data/tracks'
@@ -11,6 +11,7 @@ function TrackRow({ track, index, dragHandleProps, style }) {
   const play = usePlayerStore((s) => s.play)
   const toggle = usePlayerStore((s) => s.toggle)
   const deleteTrack = usePlayerStore((s) => s.deleteTrack)
+  const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
   const [liked, setLiked] = useState(false)
 
   const handlePlayClick = (e) => {
@@ -83,6 +84,18 @@ function TrackRow({ track, index, dragHandleProps, style }) {
       <div className="track-album">{track.album}</div>
 
       <div className="track-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <button
+          className="track-action-btn track-lyrics-btn"
+          onClick={(e) => {
+            e.stopPropagation()
+            if (!isCurrent) play(track.id)
+            setIsLyricsOpen(true)
+          }}
+          title="View Synchronized Lyrics"
+        >
+          <Mic2 size={15} />
+        </button>
+
         <button
           className={`track-action-btn ${liked ? 'active' : ''}`}
           onClick={(e) => {

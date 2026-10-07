@@ -53,6 +53,21 @@ export const usePlayerStore = create((set, get) => ({
   videoDisplayMode: 'audio', // 'audio' | 'embedded' | 'pip' | 'fullscreen'
   videoTargetRect: null,
 
+  // Synchronized Live Lyrics State
+  isLyricsOpen: false,
+  setIsLyricsOpen: (isOpen) => set({ isLyricsOpen: isOpen }),
+  toggleLyrics: () => set((s) => ({ isLyricsOpen: !s.isLyricsOpen })),
+
+  // Global Seek To Integration
+  seekToHandler: null,
+  setSeekToHandler: (fn) => set({ seekToHandler: fn }),
+  seekTo: (seconds) => {
+    const handler = get().seekToHandler
+    if (typeof handler === 'function') {
+      handler(seconds)
+    }
+  },
+
   setVideoDisplayMode: (mode, targetRect = null) => {
     set({
       videoDisplayMode: mode,
