@@ -126,6 +126,7 @@ export default function App() {
   const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
   const isVideoMode = usePlayerStore((s) => s.isVideoMode)
   const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
+  const currentUser = usePlayerStore((s) => s.currentUser)
 
   const fileInputRef = useRef(null)
 
@@ -241,11 +242,18 @@ export default function App() {
             <Info size={18} />
           </button>
           <button
-            className="stitch-topbar-btn user-avatar-btn"
+            className={`stitch-topbar-btn user-avatar-btn ${currentUser ? 'has-user-badge' : ''}`}
             onClick={() => updateFlowStep('auth')}
-            title="Account"
+            title={currentUser ? `Account: ${currentUser.name || currentUser.email}` : 'Sign In / Account'}
+            aria-label="Account"
           >
-            <User size={18} />
+            {currentUser ? (
+              <span className="topbar-user-initial">
+                {(currentUser.name || currentUser.email || 'U')[0].toUpperCase()}
+              </span>
+            ) : (
+              <User size={18} />
+            )}
           </button>
         </div>
       </header>

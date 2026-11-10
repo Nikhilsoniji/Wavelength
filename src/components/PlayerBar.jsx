@@ -18,11 +18,13 @@ import {
   Music,
   Maximize2,
   Mic2,
+  Activity,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { youtubePlayer } from '../utils/youtubePlayer'
 import AlbumArt from './AlbumArt'
 import WaveformSeek from './WaveformSeek'
+import AudioSpectrumVisualizer from './AudioSpectrumVisualizer'
 
 function fmt(s) {
   if (!s || !Number.isFinite(s)) return '0:00'
@@ -188,6 +190,19 @@ function ExpandedPlayer({ onClose, seekTo }) {
           >
             <Heart size={24} fill={liked ? 'var(--accent)' : 'none'} color={liked ? 'var(--accent)' : 'currentColor'} />
           </button>
+        </div>
+
+        {/* Real-Time Audio Frequency Spectrum Analyzer */}
+        <div className="exp-spectrum-wrapper">
+          <AudioSpectrumVisualizer
+            isPlaying={isPlaying}
+            currentTime={currentTime}
+            isYouTube={track.isYouTube}
+            hue={track.hue || 280}
+            height={64}
+            barCount={36}
+            showControls={true}
+          />
         </div>
 
         {/* Progress Bar */}
@@ -360,6 +375,18 @@ export default function PlayerBar({ seekTo }) {
             >
               <Mic2 size={18} />
               {isLyricsOpen && <span className="spb-lyrics-glow-dot" />}
+            </button>
+
+            <button
+              className="spb-btn spb-spectrum-btn"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenExpanded()
+              }}
+              title="Live Audio Spectrum Visualizer"
+              aria-label="Live Audio Spectrum Visualizer"
+            >
+              <Activity size={18} />
             </button>
 
             {track.isYouTube && (

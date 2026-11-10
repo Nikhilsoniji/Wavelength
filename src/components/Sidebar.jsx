@@ -1,5 +1,6 @@
 import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon, Info, Mic2, Youtube } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
+import { haptics } from '../utils/haptics'
 
 const navItems = [
   { id: 'library', label: 'Home', Icon: Home },
@@ -23,7 +24,10 @@ export default function Sidebar({ view, setView }) {
           return (
             <button
               key={id}
-              onClick={() => setView(id)}
+              onClick={() => {
+                haptics.impact()
+                setView(id)
+              }}
               aria-current={active ? 'page' : undefined}
               className={`bottom-nav-item ${active ? 'active' : ''}`}
             >
@@ -39,7 +43,10 @@ export default function Sidebar({ view, setView }) {
         <div className="nav-divider" />
 
         <button
-          onClick={toggleLyrics}
+          onClick={() => {
+            haptics.impact()
+            toggleLyrics()
+          }}
           className={`bottom-nav-item nav-lyrics-item ${isLyricsOpen ? 'active' : ''}`}
           title="Open Synchronized Lyrics"
           aria-label="Open Synchronized Lyrics"

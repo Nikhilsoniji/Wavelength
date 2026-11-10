@@ -2,15 +2,19 @@ import React, { useRef, useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
-  StatusBar,
   BackHandler,
   Text,
   TouchableOpacity,
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
+
+// Keep splash visible until web application loads
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Production URL deployed on Vercel
 const WAVELENGTH_URL = 'https://wavelength-wheat-nu.vercel.app';
@@ -62,11 +66,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-        <StatusBar
-          barStyle="light-content"
-          backgroundColor="#09090B"
-          translucent={false}
-        />
+        <StatusBar style="light" backgroundColor="#09090B" translucent={false} />
 
         {hasError ? (
           <View style={styles.errorContainer}>
@@ -109,7 +109,10 @@ export default function App() {
                 setCanGoBack(navState.canGoBack);
               }}
               onLoadStart={() => setIsLoading(true)}
-              onLoadEnd={() => setIsLoading(false)}
+              onLoadEnd={() => {
+                setIsLoading(false);
+                SplashScreen.hideAsync().catch(() => {});
+              }}
               onError={() => setHasError(true)}
               onHttpError={(syntheticEvent) => {
                 const { nativeEvent } = syntheticEvent;

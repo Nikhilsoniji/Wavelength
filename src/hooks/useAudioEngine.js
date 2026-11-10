@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { youtubePlayer } from '../utils/youtubePlayer'
+import { audioVisualizer } from '../utils/audioVisualizer'
 
 /**
  * Hybrid Audio Engine
@@ -24,6 +25,19 @@ export function useAudioEngine() {
   const setDuration = usePlayerStore((s) => s.setDuration)
   const next = usePlayerStore((s) => s.next)
   const repeat = usePlayerStore((s) => s.repeat)
+
+  // Connect Web Audio Frequency Analyzer
+  useEffect(() => {
+    if (audioRef.current) {
+      audioVisualizer.init(audioRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isPlaying) {
+      audioVisualizer.resumeContext()
+    }
+  }, [isPlaying])
 
   // Initialize YouTube player callbacks
   useEffect(() => {

@@ -1,6 +1,18 @@
 import { create } from 'zustand'
 import { tracks, enrichTrackMetadata } from '../data/tracks.js'
 import { youtubePlayer } from '../utils/youtubePlayer.js'
+import { getCurrentUser, signOutLocal } from '../utils/auth.js'
+import {
+  getUploadedTracks,
+  getSavedPlaylists,
+  savePlaylistRecord,
+  saveYouTubeTracks,
+  deletePlaylistRecord,
+  saveUploadedTrack,
+  deleteUploadedTrack,
+} from '../utils/db.js'
+import { fetchYouTubePlaylist } from '../utils/youtube.js'
+
 
 function buildTracksMap(list) {
   const map = new Map()
@@ -30,6 +42,12 @@ const initialQueueMap = buildQueueMap(initialQueue)
 // and without ever needing to remount the <audio> tag itself.
 
 export const usePlayerStore = create((set, get) => ({
+  currentUser: getCurrentUser(),
+  setCurrentUser: (user) => set({ currentUser: user }),
+  logout: () => {
+    signOutLocal()
+    set({ currentUser: null })
+  },
   library: initialTracks,
   tracksById: initialTracksById,
   queue: initialQueue,
@@ -162,6 +180,9 @@ export const usePlayerStore = create((set, get) => ({
     }
 
     set({ offlineWarning: null })
+
+
+
     if (targetId && targetId !== get().currentId) {
       set({ currentId: targetId, isPlaying: true, currentTime: 0 })
     } else {
@@ -214,7 +235,6 @@ export const usePlayerStore = create((set, get) => ({
   // IndexedDB persistent storage actions
   loadSavedTracks: async () => {
     try {
-      const { getUploadedTracks } = await import('../utils/db')
       const savedRecords = await getUploadedTracks()
       if (!savedRecords || savedRecords.length === 0) return
 
@@ -254,7 +274,6 @@ export const usePlayerStore = create((set, get) => ({
 
   loadSavedPlaylists: async () => {
     try {
-      const { getSavedPlaylists } = await import('../utils/db')
       const playlists = await getSavedPlaylists()
       if (!playlists || !Array.isArray(playlists)) return
 
@@ -284,7 +303,6 @@ export const usePlayerStore = create((set, get) => ({
 
   savePlaylist: async (playlist) => {
     try {
-      const { savePlaylistRecord, saveYouTubeTracks } = await import('../utils/db')
       await savePlaylistRecord(playlist)
       if (playlist.tracks && playlist.tracks.length > 0) {
         await saveYouTubeTracks(playlist.tracks)
@@ -343,7 +361,6 @@ export const usePlayerStore = create((set, get) => ({
 
   deletePlaylist: async (playlistId) => {
     try {
-      const { deletePlaylistRecord } = await import('../utils/db')
       await deletePlaylistRecord(playlistId)
 
       set((state) => ({
@@ -355,8 +372,6 @@ export const usePlayerStore = create((set, get) => ({
   },
 
   importYouTubePlaylist: async (urlOrId, autoPlay = true) => {
-    const { fetchYouTubePlaylist } = await import('../utils/youtube')
-    const { saveYouTubeTracks, savePlaylistRecord } = await import('../utils/db')
 
     const result = await fetchYouTubePlaylist(urlOrId)
     if (!result || !result.tracks || result.tracks.length === 0) {
@@ -427,7 +442,6 @@ export const usePlayerStore = create((set, get) => ({
 
   addUploadedTrack: async (file) => {
     try {
-      const { saveUploadedTrack } = await import('../utils/db')
       const id = 'user_track_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7)
       const title = file.name.replace(/\.[^/.]+$/, '') || 'Untitled Track'
 
@@ -481,7 +495,6 @@ export const usePlayerStore = create((set, get) => ({
 
   deleteTrack: async (id) => {
     try {
-      const { deleteUploadedTrack } = await import('../utils/db')
       await deleteUploadedTrack(id)
 
       set((state) => {

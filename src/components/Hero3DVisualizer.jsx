@@ -1,5 +1,6 @@
 import { useEffect, useRef, memo } from 'react'
 import * as THREE from 'three'
+import { audioVisualizer } from '../utils/audioVisualizer'
 
 /**
  * Hero3DVisualizer
@@ -134,8 +135,10 @@ function Hero3DVisualizer({ isPlaying = false, hue = 280 }) {
       animId = requestAnimationFrame(animate)
 
       const time = clock.getElapsedTime()
-      const speed = isPlaying ? 2.2 : 0.6
-      const amp = isPlaying ? 1.4 : 0.45
+      const freq = audioVisualizer.getFrequencyData(24, isPlaying, time)
+      const bassBoost = isPlaying ? 1 + freq.bassLevel * 1.5 : 1
+      const speed = (isPlaying ? 2.2 : 0.6) * (isPlaying ? 1 + freq.bassLevel * 0.3 : 1)
+      const amp = (isPlaying ? 1.3 : 0.45) * bassBoost
 
       // Smooth mouse follow
       mouseX += (targetMouseX - mouseX) * 0.05
