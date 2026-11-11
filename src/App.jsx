@@ -18,6 +18,7 @@ import LyricsView from './components/LyricsView'
 import Hero3DVisualizer from './components/Hero3DVisualizer'
 import AlbumArt from './components/AlbumArt'
 import YouTubeMusicBrowser from './components/YouTubeMusicBrowser'
+import MusicLaunchpad from './components/MusicLaunchpad'
 import {
   Sparkles,
   Search,
@@ -35,6 +36,7 @@ import {
   Tv,
   Mic2,
   SkipForward,
+  Rocket,
 } from 'lucide-react'
 
 const AI_CARDS = [
@@ -69,6 +71,7 @@ const AI_CARDS = [
 
 const QUICK_FILTERS = [
   { id: 'all', label: 'All Hits' },
+  { id: 'launch', label: '🚀 Launchpad' },
   { id: 'ytmusic', label: '🔴 YouTube Music' },
   { id: 'video', label: '📺 Live Video' },
   { id: 'offline', label: '⚡ Offline Ready' },
@@ -219,6 +222,13 @@ export default function App() {
             }
           >
             {isEffectiveOffline ? <WifiOff size={18} className="text-amber" /> : <Wifi size={18} />}
+          </button>
+          <button
+            className={`stitch-topbar-btn launch-topbar-btn ${view === 'launch' ? 'active' : ''}`}
+            onClick={() => setView('launch')}
+            title="Music Launchpad & Premieres"
+          >
+            <Rocket size={18} className="launch-icon-topbar" />
           </button>
           <button
             className={`stitch-topbar-btn yt-topbar-btn ${view === 'ytmusic' ? 'active' : ''}`}
@@ -440,6 +450,7 @@ export default function App() {
                     if (f.id === 'radio') setView('radio')
                     if (f.id === 'ambient') setView('aidj')
                     if (f.id === 'ytmusic') setView('ytmusic')
+                    if (f.id === 'launch') setView('launch')
                   }}
                 >
                   {f.label}
@@ -657,6 +668,11 @@ export default function App() {
         {view === 'radio' && (
           <div className="stitch-view-page">
             <Radio />
+          </div>
+        )}
+        {view === 'launch' && (
+          <div className="stitch-view-page">
+            <MusicLaunchpad onBack={() => setView('library')} />
           </div>
         )}
         {view === 'about' && (

@@ -1,9 +1,10 @@
-import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon, Info, Mic2, Youtube } from 'lucide-react'
+import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon, Info, Mic2, Youtube, Rocket } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { haptics } from '../utils/haptics'
 
 const navItems = [
   { id: 'library', label: 'Home', Icon: Home },
+  { id: 'launch', label: 'Launch', Icon: Rocket, isNew: true },
   { id: 'search', label: 'Search', Icon: Search },
   { id: 'ytmusic', label: 'YT Music', Icon: Youtube },
   { id: 'radio', label: 'Radio', Icon: RadioIcon },
@@ -19,7 +20,7 @@ export default function Sidebar({ view, setView }) {
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
       <div className="bottom-nav-inner">
-        {navItems.map(({ id, label, Icon }) => {
+        {navItems.map(({ id, label, Icon, isNew }) => {
           const active = view === id
           return (
             <button
@@ -34,6 +35,7 @@ export default function Sidebar({ view, setView }) {
               <div className="nav-icon-container">
                 <Icon size={20} className="bottom-nav-icon" />
                 {active && <span className="nav-active-glow" />}
+                {isNew && !active && <span className="nav-new-badge-dot" />}
               </div>
               <span className="bottom-nav-label">{label}</span>
             </button>
