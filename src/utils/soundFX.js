@@ -215,3 +215,4 @@ export function playSoundEffect(type) {
       break
   }
 }
+
