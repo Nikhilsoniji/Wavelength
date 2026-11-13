@@ -1,10 +1,12 @@
 import { Home, Search, Library as LibraryIcon, Sparkles, Radio as RadioIcon, Info, Mic2, Youtube, Rocket } from 'lucide-react'
+import { SpotifyLogo } from './RealLogos'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { haptics } from '../utils/haptics'
 
 const navItems = [
   { id: 'library', label: 'Home', Icon: Home },
-  { id: 'launch', label: 'Launch', Icon: Rocket, isNew: true },
+  { id: 'spotify', label: 'Spotify', CustomIcon: SpotifyLogo, isNew: true },
+  { id: 'launch', label: 'Launch', Icon: Rocket },
   { id: 'search', label: 'Search', Icon: Search },
   { id: 'ytmusic', label: 'YT Music', Icon: Youtube },
   { id: 'radio', label: 'Radio', Icon: RadioIcon },
@@ -20,7 +22,7 @@ export default function Sidebar({ view, setView }) {
   return (
     <nav className="bottom-nav" aria-label="Main navigation">
       <div className="bottom-nav-inner">
-        {navItems.map(({ id, label, Icon, isNew }) => {
+        {navItems.map(({ id, label, Icon, CustomIcon, isNew }) => {
           const active = view === id
           return (
             <button
@@ -33,7 +35,11 @@ export default function Sidebar({ view, setView }) {
               className={`bottom-nav-item ${active ? 'active' : ''}`}
             >
               <div className="nav-icon-container">
-                <Icon size={20} className="bottom-nav-icon" />
+                {CustomIcon ? (
+                  <CustomIcon size={20} color={active ? '#1ED760' : 'currentColor'} />
+                ) : (
+                  <Icon size={20} className="bottom-nav-icon" />
+                )}
                 {active && <span className="nav-active-glow" />}
                 {isNew && !active && <span className="nav-new-badge-dot" />}
               </div>

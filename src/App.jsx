@@ -11,7 +11,7 @@ import OnboardingScreen from './components/OnboardingScreen'
 import AuthScreen from './components/AuthScreen'
 import LandingPage from './components/LandingPage'
 import ImportYouTubeModal from './components/ImportYouTubeModal'
-import { WavelengthLogo } from './components/RealLogos'
+import { WavelengthLogo, SpotifyLogo } from './components/RealLogos'
 import AboutUs from './components/AboutUs'
 import VideoStreamPlayer from './components/VideoStreamPlayer'
 import LyricsView from './components/LyricsView'
@@ -19,6 +19,7 @@ import Hero3DVisualizer from './components/Hero3DVisualizer'
 import AlbumArt from './components/AlbumArt'
 import YouTubeMusicBrowser from './components/YouTubeMusicBrowser'
 import MusicLaunchpad from './components/MusicLaunchpad'
+import SpotifyChannel from './components/SpotifyChannel'
 import {
   Sparkles,
   Search,
@@ -71,6 +72,7 @@ const AI_CARDS = [
 
 const QUICK_FILTERS = [
   { id: 'all', label: 'All Hits' },
+  { id: 'spotify', label: '🟢 Spotify' },
   { id: 'launch', label: '🚀 Launchpad' },
   { id: 'ytmusic', label: '🔴 YouTube Music' },
   { id: 'video', label: '📺 Live Video' },
@@ -229,6 +231,13 @@ export default function App() {
             title="Music Launchpad & Premieres"
           >
             <Rocket size={18} className="launch-icon-topbar" />
+          </button>
+          <button
+            className={`stitch-topbar-btn spotify-topbar-btn ${view === 'spotify' ? 'active' : ''}`}
+            onClick={() => setView('spotify')}
+            title="Spotify Premium Master Channel"
+          >
+            <SpotifyLogo size={18} color={view === 'spotify' ? '#1ED760' : 'currentColor'} />
           </button>
           <button
             className={`stitch-topbar-btn yt-topbar-btn ${view === 'ytmusic' ? 'active' : ''}`}
@@ -447,6 +456,7 @@ export default function App() {
                   className={`filter-pill-btn ${activeFilter === f.id ? 'active' : ''}`}
                   onClick={() => {
                     setActiveFilter(f.id)
+                    if (f.id === 'spotify') setView('spotify')
                     if (f.id === 'radio') setView('radio')
                     if (f.id === 'ambient') setView('aidj')
                     if (f.id === 'ytmusic') setView('ytmusic')
@@ -673,6 +683,11 @@ export default function App() {
         {view === 'launch' && (
           <div className="stitch-view-page">
             <MusicLaunchpad onBack={() => setView('library')} />
+          </div>
+        )}
+        {view === 'spotify' && (
+          <div className="stitch-view-page">
+            <SpotifyChannel onBack={() => setView('library')} />
           </div>
         )}
         {view === 'about' && (
