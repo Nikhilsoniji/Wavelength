@@ -181,8 +181,6 @@ export const usePlayerStore = create((set, get) => ({
 
     set({ offlineWarning: null })
 
-
-
     if (targetId && targetId !== get().currentId) {
       set({ currentId: targetId, isPlaying: true, currentTime: 0 })
     } else {
