@@ -204,6 +204,31 @@ export const usePlayerStore = create((set, get) => ({
   // O(1) Queue indexing
   setQueue: (ids) => set({ queue: ids, queueIndexMap: buildQueueMap(ids) }),
 
+  clearQueue: () => {
+    const { currentId } = get()
+    const nextQueue = currentId ? [currentId] : []
+    set({ queue: nextQueue, queueIndexMap: buildQueueMap(nextQueue) })
+  },
+
+  shuffleQueue: () => {
+    const { queue, currentId } = get()
+    if (queue.length <= 1) return
+    const others = queue.filter((id) => id !== currentId)
+    for (let i = others.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [others[i], others[j]] = [others[j], others[i]]
+    }
+    const newQueue = currentId ? [currentId, ...others] : others
+    set({ queue: newQueue, queueIndexMap: buildQueueMap(newQueue) })
+  },
+
+  removeFromQueue: (trackId) => {
+    const { queue, currentId } = get()
+    if (trackId === currentId) return
+    const newQueue = queue.filter((id) => id !== trackId)
+    set({ queue: newQueue, queueIndexMap: buildQueueMap(newQueue) })
+  },
+
   next: () => {
     const { queue, queueIndexMap, currentId, shuffle } = get()
     if (shuffle) {
