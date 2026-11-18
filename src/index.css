@@ -6754,3 +6754,224 @@ img{display:block;max-width:100%}
   color: var(--text-tertiary);
   margin: 0;
 }
+
+
+/* ==========================================================================
+   WAVELENGTH LIBRARY DYNAMIC GRID VIEW STYLES
+   ========================================================================== */
+
+.library-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.library-view-toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 2px;
+}
+
+.lib-view-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.lib-view-toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lib-view-toggle-btn.active {
+  background: var(--accent, #00f2fe);
+  color: #000;
+  box-shadow: 0 2px 10px rgba(0, 242, 254, 0.35);
+}
+
+/* Dynamic Album Card Grid */
+.library-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+  animation: fadeIn 0.25s var(--ease-out) both;
+}
+
+.lib-grid-card {
+  position: relative;
+  background: var(--bg-card, rgba(20, 20, 28, 0.75));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform var(--duration-normal) var(--ease-out),
+              border-color var(--duration-fast) ease,
+              box-shadow var(--duration-normal) ease;
+}
+
+.lib-grid-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+.lib-grid-card.is-playing-card {
+  border-color: var(--accent, #00f2fe);
+  box-shadow: 0 8px 24px rgba(0, 242, 254, 0.25);
+  background: rgba(0, 242, 254, 0.05);
+}
+
+.lib-grid-art-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #111;
+  overflow: hidden;
+}
+
+.lib-grid-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.lib-grid-card:hover .lib-grid-art {
+  transform: scale(1.04);
+}
+
+.lib-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--duration-fast) ease;
+}
+
+.lib-grid-card:hover .lib-grid-overlay,
+.lib-grid-card.is-playing-card .lib-grid-overlay {
+  opacity: 1;
+}
+
+.lib-grid-play-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transform: scale(0.92);
+  transition: transform 0.15s ease;
+  cursor: pointer;
+}
+
+.lib-grid-play-icon:hover {
+  transform: scale(1.06);
+}
+
+.lib-grid-top-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  z-index: 2;
+}
+
+.lib-grid-badge {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.badge-offline {
+  background: rgba(56, 189, 248, 0.9);
+  color: #000;
+}
+
+.badge-video {
+  background: rgba(239, 68, 68, 0.9);
+  color: #fff;
+}
+
+.lib-grid-info {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lib-grid-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lib-grid-artist {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lib-grid-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.lib-grid-genre {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lib-grid-duration {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono, monospace);
+}
+
+@media (max-width: 640px) {
+  .library-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .lib-view-toggle-btn .view-toggle-text {
+    display: none;
+  }
+}

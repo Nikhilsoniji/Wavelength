@@ -1,15 +1,43 @@
 import { useMemo, useState } from 'react'
 import { usePlayerStore } from '../store/usePlayerStore'
+import { haptics } from '../utils/haptics'
 import TrackRow from './TrackRow'
 import SearchBar from './SearchBar'
-import { Disc3, Clock, Youtube, Play, Music } from 'lucide-react'
+import AlbumArt from './AlbumArt'
+import {
+  Disc3,
+  Clock,
+  Youtube,
+  Play,
+  Pause,
+  Music,
+  LayoutGrid,
+  List,
+  Sparkles,
+  Tv,
+  Mic2,
+} from 'lucide-react'
 
 export default function Library({ onOpenYouTubeModal }) {
   const library = usePlayerStore((s) => s.library)
+  const currentId = usePlayerStore((s) => s.currentId)
+  const isPlaying = usePlayerStore((s) => s.isPlaying)
+  const play = usePlayerStore((s) => s.play)
+  const toggle = usePlayerStore((s) => s.toggle)
   const searchQuery = usePlayerStore((s) => s.searchQuery)
   const savedPlaylists = usePlayerStore((s) => s.savedPlaylists)
   const playPlaylist = usePlayerStore((s) => s.playPlaylist)
+  const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
+  const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
+
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all')
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      return localStorage.getItem('wavelength_library_view') || 'grid'
+    } catch {
+      return 'grid'
+    }
+  })
 
   const activePlaylist = savedPlaylists.find((p) => p.id === activeCategoryFilter)
 
@@ -60,8 +88,17 @@ export default function Library({ onOpenYouTubeModal }) {
     return { offline, bollywood, hollywood, video }
   }, [library])
 
+  const handleToggleView = (mode) => {
+    haptics.impact()
+    setViewMode(mode)
+    try {
+      localStorage.setItem('wavelength_library_view', mode)
+    } catch {}
+  }
+
   return (
     <div className="library-page">
+      {/* Header bar */}
       <div className="library-header">
         <div className="library-header-main">
           <h1 className="library-title">Library</h1>
@@ -84,8 +121,33 @@ export default function Library({ onOpenYouTubeModal }) {
             )}
           </div>
         </div>
-        <div className="library-search-area">
-          <SearchBar />
+
+        <div className="library-controls-right">
+          <div className="library-search-area">
+            <SearchBar />
+          </div>
+
+          {/* Grid vs List View Toggle */}
+          <div className="library-view-toggle-wrap">
+            <button
+              className={`lib-view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              onClick={() => handleToggleView('grid')}
+              title="Switch to Grid View"
+              aria-label="Grid View"
+            >
+              <LayoutGrid size={15} />
+              <span className="view-toggle-text">Grid</span>
+            </button>
+            <button
+              className={`lib-view-toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+              onClick={() => handleToggleView('list')}
+              title="Switch to List View"
+              aria-label="List View"
+            >
+              <List size={15} />
+              <span className="view-toggle-text">List</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -93,14 +155,20 @@ export default function Library({ onOpenYouTubeModal }) {
       <div className="library-playlist-chips-row">
         <button
           className={`lib-playlist-chip ${activeCategoryFilter === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveCategoryFilter('all')}
+          onClick={() => {
+            haptics.impact()
+            setActiveCategoryFilter('all')
+          }}
         >
           All Hits ({library.length})
         </button>
         {counts.offline > 0 && (
           <button
             className={`lib-playlist-chip lib-offline-chip ${activeCategoryFilter === 'offline' ? 'active' : ''}`}
-            onClick={() => setActiveCategoryFilter('offline')}
+            onClick={() => {
+              haptics.impact()
+              setActiveCategoryFilter('offline')
+            }}
           >
             ⚡ Offline Ready ({counts.offline})
           </button>
@@ -108,7 +176,10 @@ export default function Library({ onOpenYouTubeModal }) {
         {counts.bollywood > 0 && (
           <button
             className={`lib-playlist-chip ${activeCategoryFilter === 'bollywood' ? 'active' : ''}`}
-            onClick={() => setActiveCategoryFilter('bollywood')}
+            onClick={() => {
+              haptics.impact()
+              setActiveCategoryFilter('bollywood')
+            }}
           >
             Bollywood ({counts.bollywood})
           </button>
@@ -116,7 +187,10 @@ export default function Library({ onOpenYouTubeModal }) {
         {counts.hollywood > 0 && (
           <button
             className={`lib-playlist-chip ${activeCategoryFilter === 'hollywood' ? 'active' : ''}`}
-            onClick={() => setActiveCategoryFilter('hollywood')}
+            onClick={() => {
+              haptics.impact()
+              setActiveCategoryFilter('hollywood')
+            }}
           >
             Hollywood ({counts.hollywood})
           </button>
@@ -125,9 +199,10 @@ export default function Library({ onOpenYouTubeModal }) {
           <button
             key={pl.id}
             className={`lib-playlist-chip ${activeCategoryFilter === pl.id ? 'active' : ''}`}
-            onClick={() =>
+            onClick={() => {
+              haptics.impact()
               setActiveCategoryFilter(activeCategoryFilter === pl.id ? 'all' : pl.id)
-            }
+            }}
           >
             <Youtube size={12} className="yt-icon-red" />
             <span>{pl.title}</span>
@@ -139,7 +214,10 @@ export default function Library({ onOpenYouTubeModal }) {
         {activePlaylist && (
           <button
             className="lib-playlist-playall-btn"
-            onClick={() => playPlaylist(activePlaylist)}
+            onClick={() => {
+              haptics.impact()
+              playPlaylist(activePlaylist)
+            }}
             title="Play all tracks in this playlist"
           >
             <Play size={12} fill="currentColor" />
@@ -148,15 +226,98 @@ export default function Library({ onOpenYouTubeModal }) {
         )}
       </div>
 
+      {/* Main Content: Grid View or List View */}
       {filtered.length === 0 ? (
         <div className="library-empty">
           <Disc3 size={42} className="empty-icon text-cyan" />
           <h2>No matching tracks found</h2>
           <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-            Nothing matches “{searchQuery}.” Try a different search term.
+            Nothing matches “{searchQuery}.” Try a different search term or category.
           </p>
         </div>
+      ) : viewMode === 'grid' ? (
+        /* Dynamic Album Card Grid View */
+        <div className="library-cards-grid">
+          {filtered.map((track, i) => {
+            const isThisPlaying = isPlaying && currentId === track.id
+            return (
+              <div
+                key={track.id}
+                className={`lib-grid-card ${isThisPlaying ? 'is-playing-card' : ''}`}
+                onClick={() => {
+                  haptics.impact()
+                  if (isThisPlaying) toggle()
+                  else play(track.id)
+                }}
+              >
+                <div className="lib-grid-art-wrap">
+                  <AlbumArt
+                    hue={track.hue || 260}
+                    thumbnail={track.thumbnail || track.cover}
+                    title={track.title}
+                    artist={track.artist}
+                    className="lib-grid-art"
+                  />
+
+                  {/* Play Overlay */}
+                  <div className="lib-grid-overlay">
+                    <button
+                      className="lib-grid-play-icon"
+                      aria-label={isThisPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
+                    >
+                      {isThisPlaying ? (
+                        <Pause size={22} fill="#000" />
+                      ) : (
+                        <Play size={22} fill="#000" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Playing Equalizer */}
+                  {isThisPlaying && (
+                    <div className="card-live-eq">
+                      <span className="eq-bar-s" />
+                      <span className="eq-bar-s" />
+                      <span className="eq-bar-s" />
+                    </div>
+                  )}
+
+                  {/* Top Badges */}
+                  <div className="lib-grid-top-badges">
+                    {track.isOfflineReady && (
+                      <span className="lib-grid-badge badge-offline" title="Offline ready">
+                        ⚡ OFFLINE
+                      </span>
+                    )}
+                    {track.isVideoStream && (
+                      <span className="lib-grid-badge badge-video" title="Live Video Broadcast">
+                        📺 LIVE
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="lib-grid-info">
+                  <div className="lib-grid-title" title={track.title}>
+                    {track.title}
+                  </div>
+                  <div className="lib-grid-artist" title={track.artist}>
+                    {track.isLive ? 'Live Radio' : track.artist}
+                  </div>
+
+                  <div className="lib-grid-meta-row">
+                    <span className="lib-grid-genre">{track.genre || track.category}</span>
+                    <span className="lib-grid-duration">
+                      {track.formattedDuration || '3:20'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       ) : (
+        /* Classic List View */
         <div className="library-panel">
           <div className="track-list-header">
             <div className="col-index">#</div>
