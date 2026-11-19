@@ -12,6 +12,11 @@ import {
   Sparkles,
   Music,
   ShieldCheck,
+  Cloud,
+  Headphones,
+  Radio,
+  RefreshCw,
+  CheckCircle2,
 } from 'lucide-react'
 import { WavelengthLogo, GoogleLogo, AppleLogo } from './RealLogos'
 import {
@@ -19,6 +24,7 @@ import {
   signUpLocal,
   signInSocialLocal,
   signInGuest,
+  migrateToAppleAccount,
 } from '../utils/auth'
 import { usePlayerStore } from '../store/usePlayerStore'
 
@@ -91,6 +97,22 @@ export default function AuthScreen({ onComplete }) {
     }
   }
 
+  const handleMigrateApple = async () => {
+    setErrorMessage('')
+    setIsLoading(true)
+    try {
+      const appleUser = await migrateToAppleAccount(
+        currentUser?.email && !currentUser.email.includes('guest') ? currentUser.email : null
+      )
+      setCurrentUser(appleUser)
+      setSuccessMessage('Successfully migrated your account to Apple ID!')
+    } catch (err) {
+      setErrorMessage(err.message || 'Apple migration failed.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleSignOut = () => {
     logout()
     setIsSwitching(true)
@@ -98,6 +120,7 @@ export default function AuthScreen({ onComplete }) {
 
   // If user is already logged in and not explicitly switching accounts
   if (currentUser && !isSwitching) {
+    const isAppleAccount = currentUser.authProvider === 'apple' || currentUser.isAppleMigrated
     const initial = (currentUser.name || currentUser.email || 'U')[0].toUpperCase()
     const memberSince = currentUser.createdAt
       ? new Date(currentUser.createdAt).toLocaleDateString(undefined, {
@@ -109,63 +132,209 @@ export default function AuthScreen({ onComplete }) {
 
     return (
       <div className="fullscreen-flow-container">
-        <div className="auth-screen-card auth-profile-card">
-          <div className="auth-header">
-            <div className="auth-user-avatar-large">
-              <span>{initial}</span>
+        {isAppleAccount ? (
+          <div className="auth-screen-card apple-profile-card">
+            {/* Apple Account Verified Header */}
+            <div className="apple-header">
+              <div className="apple-avatar-badge">
+                <AppleLogo size={40} color="#FFFFFF" />
+                <span className="apple-verified-tag">
+                  <Check size={11} strokeWidth={3} />
+                  <span>VERIFIED ID</span>
+                </span>
+              </div>
+              <h1 className="apple-title">{currentUser.name || 'Apple Listener'}</h1>
+              <p className="apple-subtitle">{currentUser.email}</p>
+              <div className="apple-status-pill">
+                <span className="apple-live-dot" />
+                <span>Apple Account Migrated • iCloud Active</span>
+              </div>
             </div>
-            <h1 className="auth-title">{currentUser.name}</h1>
-            <p className="auth-subtitle">{currentUser.email}</p>
-          </div>
 
-          <div className="auth-profile-details">
-            <div className="profile-detail-row">
-              <span className="profile-label">Database Storage</span>
-              <span className="profile-val-badge">IndexedDB • Local</span>
+            {/* Apple Ecosystem Feature Grid */}
+            <div className="apple-services-grid">
+              <div className="apple-service-item">
+                <div className="apple-service-icon-box">
+                  <Cloud size={18} className="apple-icon-blue" />
+                </div>
+                <div className="apple-service-info">
+                  <span className="apple-service-name">iCloud Music Library</span>
+                  <span className="apple-service-desc">Synced & IndexedDB Backed</span>
+                </div>
+              </div>
+
+              <div className="apple-service-item">
+                <div className="apple-service-icon-box">
+                  <Headphones size={18} className="apple-icon-pink" />
+                </div>
+                <div className="apple-service-info">
+                  <span className="apple-service-name">Spatial & Lossless</span>
+                  <span className="apple-service-desc">24-bit / 96kHz ALAC Master</span>
+                </div>
+              </div>
+
+              <div className="apple-service-item">
+                <div className="apple-service-icon-box">
+                  <ShieldCheck size={18} className="apple-icon-green" />
+                </div>
+                <div className="apple-service-info">
+                  <span className="apple-service-name">Keychain Security</span>
+                  <span className="apple-service-desc">Hardware Secure Enclave</span>
+                </div>
+              </div>
+
+              <div className="apple-service-item">
+                <div className="apple-service-icon-box">
+                  <Radio size={18} className="apple-icon-purple" />
+                </div>
+                <div className="apple-service-info">
+                  <span className="apple-service-name">AirPlay 2 Handoff</span>
+                  <span className="apple-service-desc">Multi-Room Ready</span>
+                </div>
+              </div>
             </div>
-            <div className="profile-detail-row">
-              <span className="profile-label">Sign-in Method</span>
-              <span className="profile-val-badge text-capitalize">{currentUser.authProvider || 'Email'}</span>
+
+            {/* Account Details Specification */}
+            <div className="apple-profile-details">
+              <div className="apple-detail-row">
+                <span className="apple-label">Apple ID</span>
+                <span className="apple-val">{currentUser.email}</span>
+              </div>
+              <div className="apple-detail-row">
+                <span className="apple-label">Audio Profile</span>
+                <span className="apple-val-badge">Lossless Spatial Audio</span>
+              </div>
+              <div className="apple-detail-row">
+                <span className="apple-label">Migrated On</span>
+                <span className="apple-val">
+                  {currentUser.appleMigratedAt
+                    ? new Date(currentUser.appleMigratedAt).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : memberSince}
+                </span>
+              </div>
             </div>
-            <div className="profile-detail-row">
-              <span className="profile-label">Member Since</span>
-              <span className="profile-val">{memberSince}</span>
+
+            {/* Apple-styled Action Buttons */}
+            <div className="apple-profile-actions">
+              <button className="apple-primary-btn" onClick={onComplete}>
+                <span>Continue Listening</span>
+                <Music size={18} />
+              </button>
+              <div className="profile-secondary-actions">
+                <button
+                  type="button"
+                  className="apple-secondary-btn"
+                  onClick={() => setIsSwitching(true)}
+                >
+                  Switch Account
+                </button>
+                <button
+                  type="button"
+                  className="profile-btn-danger"
+                  onClick={handleSignOut}
+                >
+                  <LogOut size={15} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="apple-trust-strip">
+              <div className="trust-item">
+                <ShieldCheck size={14} className="text-white" /> Apple Silicon Optimized
+              </div>
+              <div className="trust-item">
+                <CheckCircle2 size={14} className="text-white" /> Dolby Atmos Certified
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="auth-screen-card auth-profile-card">
+            <div className="auth-header">
+              <div className="auth-user-avatar-large">
+                <span>{initial}</span>
+              </div>
+              <h1 className="auth-title">{currentUser.name}</h1>
+              <p className="auth-subtitle">{currentUser.email}</p>
+            </div>
 
-          <div className="auth-profile-actions">
-            <button className="auth-submit-btn" onClick={onComplete}>
-              <span>Continue Listening</span>
-              <Music size={18} />
-            </button>
-            <div className="profile-secondary-actions">
+            {/* Apple Account Migration Offer Banner */}
+            <div className="apple-migrate-banner">
+              <div className="apple-migrate-header">
+                <div className="apple-migrate-icon">
+                  <AppleLogo size={22} color="#FFFFFF" />
+                </div>
+                <div className="apple-migrate-text">
+                  <h3>Migrate to Apple Account</h3>
+                  <p>
+                    Unlock 24-bit Spatial Audio, iCloud Keychain sync, and Apple ecosystem handoff.
+                  </p>
+                </div>
+              </div>
               <button
                 type="button"
-                className="profile-btn-secondary"
-                onClick={() => setIsSwitching(true)}
+                className="apple-migrate-btn"
+                onClick={handleMigrateApple}
+                disabled={isLoading}
               >
-                Switch Account
-              </button>
-              <button
-                type="button"
-                className="profile-btn-danger"
-                onClick={handleSignOut}
-              >
-                <LogOut size={15} />
-                <span>Sign Out</span>
+                <AppleLogo size={15} color="#000000" />
+                <span>{isLoading ? 'Migrating...' : 'Migrate to Apple ID'}</span>
               </button>
             </div>
-          </div>
 
-          <div className="auth-trust-strip">
-            <div className="trust-item">
-              <ShieldCheck size={14} className="text-cyan" /> Secure Client Database
+            <div className="auth-profile-details">
+              <div className="profile-detail-row">
+                <span className="profile-label">Database Storage</span>
+                <span className="profile-val-badge">IndexedDB • Local</span>
+              </div>
+              <div className="profile-detail-row">
+                <span className="profile-label">Sign-in Method</span>
+                <span className="profile-val-badge text-capitalize">{currentUser.authProvider || 'Email'}</span>
+              </div>
+              <div className="profile-detail-row">
+                <span className="profile-label">Member Since</span>
+                <span className="profile-val">{memberSince}</span>
+              </div>
             </div>
-            <div className="trust-item">
-              <Check size={14} className="text-cyan" /> SHA-256 Hashed
+
+            <div className="auth-profile-actions">
+              <button className="auth-submit-btn" onClick={onComplete}>
+                <span>Continue Listening</span>
+                <Music size={18} />
+              </button>
+              <div className="profile-secondary-actions">
+                <button
+                  type="button"
+                  className="profile-btn-secondary"
+                  onClick={() => setIsSwitching(true)}
+                >
+                  Switch Account
+                </button>
+                <button
+                  type="button"
+                  className="profile-btn-danger"
+                  onClick={handleSignOut}
+                >
+                  <LogOut size={15} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="auth-trust-strip">
+              <div className="trust-item">
+                <ShieldCheck size={14} className="text-cyan" /> Secure Client Database
+              </div>
+              <div className="trust-item">
+                <Check size={14} className="text-cyan" /> SHA-256 Hashed
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     )
   }

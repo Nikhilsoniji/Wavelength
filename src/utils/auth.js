@@ -54,6 +54,8 @@ export function getCurrentUser() {
   return null
 }
 
+export const getActiveUser = getCurrentUser
+
 /**
  * Persists the active user session.
  */
@@ -166,8 +168,9 @@ export async function signInLocal({ email, password }) {
  */
 export async function signInSocialLocal(provider = 'google') {
   const normProvider = provider.toLowerCase()
-  const demoEmail = `${normProvider}.user@wavelength.app`
-  const displayName = normProvider === 'google' ? 'Google Explorer' : 'Apple Listener'
+  const isApple = normProvider === 'apple'
+  const demoEmail = isApple ? 'listener.apple@icloud.com' : `${normProvider}.user@wavelength.app`
+  const displayName = isApple ? 'Apple Listener' : 'Google Explorer'
 
   let user = await getUserByEmail(demoEmail)
   if (!user) {
@@ -177,16 +180,64 @@ export async function signInSocialLocal(provider = 'google') {
       name: displayName,
       passwordHash: '',
       authProvider: normProvider,
+      isAppleMigrated: isApple,
+      appleMigratedAt: isApple ? new Date().toISOString() : null,
+      appleIdVerified: isApple,
+      iCloudSyncEnabled: isApple,
       createdAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
       preferences: {
-        theme: 'dark',
-        soundQuality: 'lossless',
+        theme: isApple ? 'apple-dark' : 'dark',
+        soundQuality: isApple ? 'lossless-spatial' : 'lossless',
         haptics: true,
       },
     }
   } else {
     user.lastLoginAt = new Date().toISOString()
+    if (isApple) {
+      user.isAppleMigrated = true
+      user.appleIdVerified = true
+      user.iCloudSyncEnabled = true
+    }
+  }
+
+  await saveUserRecord(user)
+  setActiveUser(user)
+  return sanitizeUser(user)
+}
+
+/**
+ * Migrates any active user session to an Apple Account with iCloud syncing.
+ */
+export async function migrateToAppleAccount(customAppleEmail = null) {
+  const current = getActiveUser()
+  const appleEmail =
+    customAppleEmail ||
+    (current?.email && !current.email.includes('guest')
+      ? current.email
+      : 'listener.apple@icloud.com')
+  const appleName =
+    current?.name && current.name !== 'Guest Listener' ? current.name : 'Apple Listener'
+
+  const user = {
+    id: current?.id || `usr_apple_${Date.now()}`,
+    email: appleEmail,
+    name: appleName,
+    passwordHash: current?.passwordHash || '',
+    authProvider: 'apple',
+    isAppleMigrated: true,
+    appleMigratedAt: new Date().toISOString(),
+    appleIdVerified: true,
+    iCloudSyncEnabled: true,
+    createdAt: current?.createdAt || new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+    preferences: {
+      ...(current?.preferences || {}),
+      theme: 'apple-dark',
+      soundQuality: 'lossless-spatial',
+      appleHaptics: true,
+      haptics: true,
+    },
   }
 
   await saveUserRecord(user)

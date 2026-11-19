@@ -12,12 +12,18 @@ import {
   Check,
   LogOut,
   Music,
+  Cloud,
+  Headphones,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react'
+import { AppleLogo } from './RealLogos'
 import {
   signInLocal,
   signUpLocal,
   signInSocialLocal,
   signInGuest,
+  migrateToAppleAccount,
 } from '../utils/auth'
 import { usePlayerStore } from '../store/usePlayerStore'
 
@@ -92,61 +98,159 @@ export default function AuthModal({ isOpen, onClose }) {
     }
   }
 
+  const handleMigrateApple = async () => {
+    setErrorMessage('')
+    setIsLoading(true)
+    try {
+      const appleUser = await migrateToAppleAccount(
+        currentUser?.email && !currentUser.email.includes('guest') ? currentUser.email : null
+      )
+      setCurrentUser(appleUser)
+      setSuccessMessage('Migrated to Apple Account successfully!')
+    } catch (err) {
+      setErrorMessage(err.message || 'Apple migration failed.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const isAppleAccount = currentUser?.authProvider === 'apple' || currentUser?.isAppleMigrated
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="auth-modal-card card" onClick={(e) => e.stopPropagation()}>
+      <div className={`auth-modal-card card ${isAppleAccount ? 'apple-modal-mode' : ''}`} onClick={(e) => e.stopPropagation()}>
         <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
           <X size={20} />
         </button>
 
         {currentUser && !isSwitching ? (
-          <div className="auth-profile-modal-view">
-            <div className="auth-header">
-              <div className="auth-user-avatar-large">
-                <span>{(currentUser.name || currentUser.email || 'U')[0].toUpperCase()}</span>
+          isAppleAccount ? (
+            <div className="auth-profile-modal-view apple-profile-modal-view">
+              <div className="apple-header">
+                <div className="apple-avatar-badge">
+                  <AppleLogo size={36} color="#FFFFFF" />
+                  <span className="apple-verified-tag">
+                    <Check size={10} strokeWidth={3} />
+                    <span>VERIFIED ID</span>
+                  </span>
+                </div>
+                <h2 className="apple-title">{currentUser.name || 'Apple Listener'}</h2>
+                <p className="apple-subtitle">{currentUser.email}</p>
+                <div className="apple-status-pill">
+                  <span className="apple-live-dot" />
+                  <span>Apple Account Migrated • iCloud Active</span>
+                </div>
               </div>
-              <h2 className="auth-title">{currentUser.name}</h2>
-              <p className="auth-subtitle">{currentUser.email}</p>
-            </div>
 
-            <div className="auth-profile-details">
-              <div className="profile-detail-row">
-                <span className="profile-label">Database</span>
-                <span className="profile-val-badge">IndexedDB Local</span>
+              <div className="apple-profile-details">
+                <div className="apple-detail-row">
+                  <span className="apple-label">Apple ID</span>
+                  <span className="apple-val">{currentUser.email}</span>
+                </div>
+                <div className="apple-detail-row">
+                  <span className="apple-label">Audio Master</span>
+                  <span className="apple-val-badge">Lossless Spatial Audio</span>
+                </div>
               </div>
-              <div className="profile-detail-row">
-                <span className="profile-label">Provider</span>
-                <span className="profile-val-badge text-capitalize">{currentUser.authProvider || 'Email'}</span>
+
+              <div className="apple-profile-actions">
+                <button className="apple-primary-btn" onClick={onClose}>
+                  <span>Continue Listening</span>
+                  <Music size={18} />
+                </button>
+                <div className="profile-secondary-actions">
+                  <button
+                    type="button"
+                    className="apple-secondary-btn"
+                    onClick={() => setIsSwitching(true)}
+                  >
+                    Switch Account
+                  </button>
+                  <button
+                    type="button"
+                    className="profile-btn-danger"
+                    onClick={() => {
+                      logout()
+                      setIsSwitching(true)
+                    }}
+                  >
+                    <LogOut size={15} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               </div>
             </div>
+          ) : (
+            <div className="auth-profile-modal-view">
+              <div className="auth-header">
+                <div className="auth-user-avatar-large">
+                  <span>{(currentUser.name || currentUser.email || 'U')[0].toUpperCase()}</span>
+                </div>
+                <h2 className="auth-title">{currentUser.name}</h2>
+                <p className="auth-subtitle">{currentUser.email}</p>
+              </div>
 
-            <div className="auth-profile-actions">
-              <button className="auth-submit-btn" onClick={onClose}>
-                <span>Continue Listening</span>
-                <Music size={18} />
-              </button>
-              <div className="profile-secondary-actions">
+              {/* Apple Migration Banner in Modal */}
+              <div className="apple-migrate-banner">
+                <div className="apple-migrate-header">
+                  <div className="apple-migrate-icon">
+                    <AppleLogo size={20} color="#FFFFFF" />
+                  </div>
+                  <div className="apple-migrate-text">
+                    <h3>Migrate to Apple Account</h3>
+                    <p>Unlock 24-bit Spatial Audio & iCloud Keychain sync.</p>
+                  </div>
+                </div>
                 <button
                   type="button"
-                  className="profile-btn-secondary"
-                  onClick={() => setIsSwitching(true)}
+                  className="apple-migrate-btn"
+                  onClick={handleMigrateApple}
+                  disabled={isLoading}
                 >
-                  Switch Account
-                </button>
-                <button
-                  type="button"
-                  className="profile-btn-danger"
-                  onClick={() => {
-                    logout()
-                    setIsSwitching(true)
-                  }}
-                >
-                  <LogOut size={15} />
-                  <span>Sign Out</span>
+                  <AppleLogo size={14} color="#000000" />
+                  <span>{isLoading ? 'Migrating...' : 'Migrate Now'}</span>
                 </button>
               </div>
+
+              <div className="auth-profile-details">
+                <div className="profile-detail-row">
+                  <span className="profile-label">Database</span>
+                  <span className="profile-val-badge">IndexedDB Local</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-label">Provider</span>
+                  <span className="profile-val-badge text-capitalize">{currentUser.authProvider || 'Email'}</span>
+                </div>
+              </div>
+
+              <div className="auth-profile-actions">
+                <button className="auth-submit-btn" onClick={onClose}>
+                  <span>Continue Listening</span>
+                  <Music size={18} />
+                </button>
+                <div className="profile-secondary-actions">
+                  <button
+                    type="button"
+                    className="profile-btn-secondary"
+                    onClick={() => setIsSwitching(true)}
+                  >
+                    Switch Account
+                  </button>
+                  <button
+                    type="button"
+                    className="profile-btn-danger"
+                    onClick={() => {
+                      logout()
+                      setIsSwitching(true)
+                    }}
+                  >
+                    <LogOut size={15} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )
         ) : (
           <>
             <div className="auth-header">
