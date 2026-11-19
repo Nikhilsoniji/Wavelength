@@ -13,9 +13,6 @@ import {
   Music,
   LayoutGrid,
   List,
-  Sparkles,
-  Tv,
-  Mic2,
 } from 'lucide-react'
 
 export default function Library({ onOpenYouTubeModal }) {
@@ -27,8 +24,6 @@ export default function Library({ onOpenYouTubeModal }) {
   const searchQuery = usePlayerStore((s) => s.searchQuery)
   const savedPlaylists = usePlayerStore((s) => s.savedPlaylists)
   const playPlaylist = usePlayerStore((s) => s.playPlaylist)
-  const setIsLyricsOpen = usePlayerStore((s) => s.setIsLyricsOpen)
-  const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
 
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all')
   const [viewMode, setViewMode] = useState(() => {

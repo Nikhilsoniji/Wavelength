@@ -9,14 +9,10 @@ import {
   Disc3,
   Clock,
   Share2,
-  Heart,
   TrendingUp,
   Tv,
   Check,
   Mic2,
-  Music,
-  Headphones,
-  Radio,
   Sliders,
   Volume2
 } from 'lucide-react'

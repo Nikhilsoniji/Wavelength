@@ -9,7 +9,6 @@ import {
   MapPin,
   Tv,
   Eye,
-  Sparkles,
 } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { videoStreams } from '../data/tracks'

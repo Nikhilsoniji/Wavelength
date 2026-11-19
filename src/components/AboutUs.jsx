@@ -1,25 +1,27 @@
-import { useState } from 'react'
 import {
   Sparkles,
   Music,
   Radio,
   RadioTower,
   Cpu,
-  ShieldCheck,
   Smartphone,
   Github,
-  Globe,
   Heart,
   Play,
   Pause,
-  ExternalLink,
   Layers,
   Zap,
   Code2,
-  Users,
 } from 'lucide-react'
 import { WavelengthLogo } from './RealLogos'
 import { usePlayerStore } from '../store/usePlayerStore'
+
+const ABOUT_STATS = [
+  { num: '28+', label: 'Bollywood & Hollywood Hits' },
+  { num: '1,000+', label: 'Live Global Radio Stations' },
+  { num: '0', label: 'Ads, Trackers & Interruptions' },
+  { num: '100%', label: 'Private & Edge-Powered' },
+]
 
 export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
   const isPlaying = usePlayerStore((s) => s.isPlaying)
@@ -27,13 +29,7 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
   const play = usePlayerStore((s) => s.play)
   const toggle = usePlayerStore((s) => s.toggle)
 
-  const handlePlaySong = (id) => {
-    if (currentId === id) {
-      toggle()
-    } else {
-      play(id)
-    }
-  }
+  const handlePlaySong = (id) => (currentId === id ? toggle() : play(id))
 
   return (
     <div className="about-page">
@@ -50,32 +46,19 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
             <span>ABOUT WAVELENGTH • v1.2.0</span>
           </div>
 
-          <h1 className="about-hero-title">
-            Harmonizing Sound, Science & Atmosphere
-          </h1>
-
+          <h1 className="about-hero-title">Harmonizing Sound, Science & Atmosphere</h1>
           <p className="about-hero-subtitle">
             Wavelength is an open, high-fidelity music streaming, spatial audio visualizer,
             and intelligent curation platform designed for audiophiles, creators, and daily listeners.
           </p>
 
           <div className="about-hero-stats">
-            <div className="about-stat-box">
-              <span className="stat-number">28+</span>
-              <span className="stat-label">Bollywood & Hollywood Hits</span>
-            </div>
-            <div className="about-stat-box">
-              <span className="stat-number">1,000+</span>
-              <span className="stat-label">Live Global Radio Stations</span>
-            </div>
-            <div className="about-stat-box">
-              <span className="stat-number">0</span>
-              <span className="stat-label">Ads, Trackers & Interruptions</span>
-            </div>
-            <div className="about-stat-box">
-              <span className="stat-number">100%</span>
-              <span className="stat-label">Private & Edge-Powered</span>
-            </div>
+            {ABOUT_STATS.map((s) => (
+              <div key={s.label} className="about-stat-box">
+                <span className="stat-number">{s.num}</span>
+                <span className="stat-label">{s.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -114,47 +97,27 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
         </div>
 
         <div className="about-pillars-grid">
-          {/* Pillar 1 */}
           <div className="pillar-card">
-            <div className="pillar-icon-box cyan-box">
-              <Music size={24} color="#38bdf8" />
-            </div>
+            <div className="pillar-icon-box cyan-box"><Music size={24} color="#38bdf8" /></div>
             <h3 className="pillar-title">Curated Hit Catalog</h3>
             <p className="pillar-desc">
               Instant streaming of the latest verified hits from Arijit Singh, Karan Aujla, Badshah,
               Lady Gaga, Bruno Mars, Sabrina Carpenter, Billie Eilish, and The Weeknd with official HD covers.
             </p>
             <div className="pillar-footer">
-              <button
-                className="pillar-action-btn"
-                onClick={() => handlePlaySong('bw-1')}
-              >
-                {isPlaying && currentId === 'bw-1' ? (
-                  <Pause size={14} fill="currentColor" />
-                ) : (
-                  <Play size={14} fill="currentColor" />
-                )}
+              <button className="pillar-action-btn" onClick={() => handlePlaySong('bw-1')}>
+                {isPlaying && currentId === 'bw-1' ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
                 <span>Play Kesariya</span>
               </button>
-              <button
-                className="pillar-action-btn"
-                onClick={() => handlePlaySong('hw-1')}
-              >
-                {isPlaying && currentId === 'hw-1' ? (
-                  <Pause size={14} fill="currentColor" />
-                ) : (
-                  <Play size={14} fill="currentColor" />
-                )}
+              <button className="pillar-action-btn" onClick={() => handlePlaySong('hw-1')}>
+                {isPlaying && currentId === 'hw-1' ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" />}
                 <span>Play Die With A Smile</span>
               </button>
             </div>
           </div>
 
-          {/* Pillar 2 */}
           <div className="pillar-card">
-            <div className="pillar-icon-box purple-box">
-              <RadioTower size={24} color="#cabeff" />
-            </div>
+            <div className="pillar-icon-box purple-box"><RadioTower size={24} color="#cabeff" /></div>
             <h3 className="pillar-title">Live Worldwide Radio</h3>
             <p className="pillar-desc">
               Connect to over a thousand live broadcast frequencies across India, USA, UK, and worldwide.
@@ -168,11 +131,8 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
             </div>
           </div>
 
-          {/* Pillar 3 */}
           <div className="pillar-card">
-            <div className="pillar-icon-box amber-box">
-              <Cpu size={24} color="#f59e0b" />
-            </div>
+            <div className="pillar-icon-box amber-box"><Cpu size={24} color="#f59e0b" /></div>
             <h3 className="pillar-title">Dual-Pipeline Audio Bridge</h3>
             <p className="pillar-desc">
               Seamlessly coordinates HTML5 Web Audio API, WebGL 3D particle visualizers, and background
@@ -186,11 +146,8 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
             </div>
           </div>
 
-          {/* Pillar 4 */}
           <div className="pillar-card">
-            <div className="pillar-icon-box green-box">
-              <Smartphone size={24} color="#10b981" />
-            </div>
+            <div className="pillar-icon-box green-box"><Smartphone size={24} color="#10b981" /></div>
             <h3 className="pillar-title">Mobile Everywhere via Expo 57</h3>
             <p className="pillar-desc">
               Runs cross-platform across web, iOS, and Android. Powered by Expo SDK 57 and React Native
@@ -207,12 +164,8 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
       <section className="about-section">
         <div className="about-creator-card">
           <div className="creator-avatar-wrap">
-            <div className="creator-avatar">
-              <span className="creator-initials">NS</span>
-            </div>
-            <div className="creator-badge">
-              <Zap size={12} fill="#FA2D48" color="#FA2D48" />
-            </div>
+            <div className="creator-avatar"><span className="creator-initials">NS</span></div>
+            <div className="creator-badge"><Zap size={12} fill="#FA2D48" color="#FA2D48" /></div>
           </div>
 
           <div className="creator-details">
@@ -222,25 +175,11 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
                 <span className="creator-role">Lead Architect & Product Engineer</span>
               </div>
               <div className="creator-social-links">
-                <a
-                  href="https://github.com/Nikhilsoniji"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="creator-link-btn"
-                  title="GitHub Profile"
-                >
-                  <Github size={18} />
-                  <span>GitHub</span>
+                <a href="https://github.com/Nikhilsoniji" target="_blank" rel="noopener noreferrer" className="creator-link-btn" title="GitHub Profile">
+                  <Github size={18} /><span>GitHub</span>
                 </a>
-                <a
-                  href="https://github.com/Nikhilsoniji/Wavelength"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="creator-link-btn"
-                  title="Source Code"
-                >
-                  <Code2 size={18} />
-                  <span>Repository</span>
+                <a href="https://github.com/Nikhilsoniji/Wavelength" target="_blank" rel="noopener noreferrer" className="creator-link-btn" title="Source Code">
+                  <Code2 size={18} /><span>Repository</span>
                 </a>
               </div>
             </div>
@@ -263,16 +202,9 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
           </h3>
 
           <div className="tech-pills-wrap">
-            <span className="tech-pill">React 19</span>
-            <span className="tech-pill">Vite 5</span>
-            <span className="tech-pill">Zustand State Store</span>
-            <span className="tech-pill">Expo SDK 57</span>
-            <span className="tech-pill">React Native</span>
-            <span className="tech-pill">Web Audio API</span>
-            <span className="tech-pill">IndexedDB (idb)</span>
-            <span className="tech-pill">Radio Browser API</span>
-            <span className="tech-pill">Lucide Vector Icons</span>
-            <span className="tech-pill">Vercel Edge Network</span>
+            {['React 19', 'Vite 5', 'Zustand State Store', 'Expo SDK 57', 'React Native', 'Web Audio API', 'IndexedDB (idb)', 'Radio Browser API', 'Lucide Vector Icons', 'Vercel Edge Network'].map((t) => (
+              <span key={t} className="tech-pill">{t}</span>
+            ))}
           </div>
         </div>
       </section>
@@ -286,12 +218,10 @@ export default function AboutUs({ onExplore, onOpenRadio, onOpenAiDj }) {
           </p>
           <div className="about-cta-buttons">
             <button className="cta-primary-btn" onClick={onExplore}>
-              <Play size={18} fill="#0a0a0a" />
-              <span>Explore Library</span>
+              <Play size={18} fill="#0a0a0a" /><span>Explore Library</span>
             </button>
             <button className="cta-secondary-btn" onClick={onOpenRadio}>
-              <Radio size={18} />
-              <span>Live Radio Stations</span>
+              <Radio size={18} /><span>Live Radio Stations</span>
             </button>
           </div>
         </div>

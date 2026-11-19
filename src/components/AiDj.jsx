@@ -8,14 +8,10 @@ import {
   Flame,
   Zap,
   Sliders,
-  Radio,
   Volume2,
   Headphones,
-  Music2,
   ListPlus,
   RefreshCw,
-  Heart,
-  TrendingUp,
 } from 'lucide-react'
 import { haptics } from '../utils/haptics'
 import AlbumArt from './AlbumArt'
@@ -96,11 +92,6 @@ export default function AiDj() {
 
     return pool.slice(0, 16)
   }, [library, activeMood])
-
-  // Track currently playing
-  const currentTrack = useMemo(() => {
-    return library.find((t) => t.id === currentId) || null
-  }, [library, currentId])
 
   // Generate & Launch AI Set
   const handleLaunchAiSet = useCallback(() => {

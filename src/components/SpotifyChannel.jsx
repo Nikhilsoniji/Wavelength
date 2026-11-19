@@ -7,15 +7,10 @@ import {
   Sliders,
   Volume2,
   ShieldCheck,
-  Layers,
   Flame,
   Search,
   Zap,
-  Share2,
-  Headphones,
-  Music,
   ArrowRight,
-  Radio,
 } from 'lucide-react'
 import { SpotifyLogo } from './RealLogos'
 import { haptics } from '../utils/haptics'

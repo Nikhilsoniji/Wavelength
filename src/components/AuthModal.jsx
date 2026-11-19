@@ -12,10 +12,6 @@ import {
   Check,
   LogOut,
   Music,
-  Cloud,
-  Headphones,
-  ShieldCheck,
-  CheckCircle2,
 } from 'lucide-react'
 import { AppleLogo } from './RealLogos'
 import {

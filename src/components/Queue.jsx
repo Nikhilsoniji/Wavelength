@@ -9,7 +9,6 @@ import {
   Tv,
   X,
   Disc3,
-  Music,
   ListOrdered
 } from 'lucide-react'
 import {

@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import {
-  Minimize2,
-  Maximize2,
-  X,
-  Tv,
-  ExternalLink,
-  Volume2,
-  VolumeX,
-} from 'lucide-react'
+import { Minimize2, Maximize2, X, Tv, Volume2, VolumeX } from 'lucide-react'
 import { usePlayerStore } from '../store/usePlayerStore'
 import { youtubePlayer } from '../utils/youtubePlayer'
 
@@ -15,7 +7,6 @@ export default function VideoStreamPlayer() {
   const isVideoMode = usePlayerStore((s) => s.isVideoMode)
   const videoDisplayMode = usePlayerStore((s) => s.videoDisplayMode)
   const setVideoDisplayMode = usePlayerStore((s) => s.setVideoDisplayMode)
-  const toggleVideoMode = usePlayerStore((s) => s.toggleVideoMode)
   const track = usePlayerStore((s) => s.currentTrack())
   const muted = usePlayerStore((s) => s.muted)
   const toggleMute = usePlayerStore((s) => s.toggleMute)
@@ -27,26 +18,19 @@ export default function VideoStreamPlayer() {
 
   // Measure anchor rect and sync with YouTube host container
   useEffect(() => {
-    if (!isVideoMode) {
-      youtubePlayer.setVideoMode('audio')
-      return
-    }
-
-    if (videoDisplayMode === 'fullscreen') {
-      youtubePlayer.setVideoMode('fullscreen')
-      return
-    }
+    if (!isVideoMode) return youtubePlayer.setVideoMode('audio')
+    if (videoDisplayMode === 'fullscreen') return youtubePlayer.setVideoMode('fullscreen')
 
     if (videoDisplayMode === 'pip' && pipAnchorRef.current) {
       const updateRect = () => {
         if (!pipAnchorRef.current) return
-        const rect = pipAnchorRef.current.getBoundingClientRect()
-        if (rect.width > 0 && rect.height > 0) {
+        const r = pipAnchorRef.current.getBoundingClientRect()
+        if (r.width > 0 && r.height > 0) {
           youtubePlayer.setVideoMode('pip', {
-            top: Math.round(rect.top),
-            left: Math.round(rect.left),
-            width: Math.round(rect.width),
-            height: Math.round(rect.height),
+            top: Math.round(r.top),
+            left: Math.round(r.left),
+            width: Math.round(r.width),
+            height: Math.round(r.height),
           })
         }
       }
@@ -54,7 +38,6 @@ export default function VideoStreamPlayer() {
       updateRect()
       window.addEventListener('resize', updateRect)
       window.addEventListener('scroll', updateRect, true)
-
       return () => {
         window.removeEventListener('resize', updateRect)
         window.removeEventListener('scroll', updateRect, true)
@@ -65,19 +48,15 @@ export default function VideoStreamPlayer() {
   // Auto-hide controls in fullscreen mode
   useEffect(() => {
     if (videoDisplayMode !== 'fullscreen') return
-
     const resetTimer = () => {
       setShowControls(true)
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
-      hideTimerRef.current = setTimeout(() => {
-        setShowControls(false)
-      }, 3000)
+      hideTimerRef.current = setTimeout(() => setShowControls(false), 3000)
     }
 
     resetTimer()
     window.addEventListener('mousemove', resetTimer)
     window.addEventListener('touchstart', resetTimer)
-
     return () => {
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
       window.removeEventListener('mousemove', resetTimer)
@@ -85,9 +64,7 @@ export default function VideoStreamPlayer() {
     }
   }, [videoDisplayMode])
 
-  if (!isVideoMode || !track?.isYouTube) {
-    return null
-  }
+  if (!isVideoMode || !track?.isYouTube) return null
 
   // Fullscreen video overlay controls
   if (videoDisplayMode === 'fullscreen') {
@@ -104,25 +81,13 @@ export default function VideoStreamPlayer() {
           </div>
 
           <div className="vfs-actions">
-            <button
-              className="vfs-btn"
-              onClick={toggleMute}
-              title={muted ? 'Unmute' : 'Mute'}
-            >
+            <button className="vfs-btn" onClick={toggleMute} title={muted ? 'Unmute' : 'Mute'}>
               {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </button>
-            <button
-              className="vfs-btn"
-              onClick={() => setVideoDisplayMode('pip')}
-              title="Return to Picture-in-Picture"
-            >
+            <button className="vfs-btn" onClick={() => setVideoDisplayMode('pip')} title="Picture-in-Picture">
               <Minimize2 size={20} />
             </button>
-            <button
-              className="vfs-btn vfs-close-btn"
-              onClick={() => setVideoDisplayMode('audio')}
-              title="Close Video (Keep Audio Playing)"
-            >
+            <button className="vfs-btn vfs-close-btn" onClick={() => setVideoDisplayMode('audio')} title="Audio Only">
               <X size={20} />
             </button>
           </div>
@@ -143,40 +108,23 @@ export default function VideoStreamPlayer() {
         <div className={`pip-stream-header ${isHovered ? 'hovered' : ''}`}>
           <div className="pip-header-left">
             <Tv size={13} className="pip-icon text-cyan" />
-            <span className="pip-title" title={track.title}>
-              {track.title}
-            </span>
+            <span className="pip-title" title={track.title}>{track.title}</span>
           </div>
-
           <div className="pip-header-actions">
-            <button
-              className="pip-action-btn"
-              onClick={() => setVideoDisplayMode('fullscreen')}
-              title="Fullscreen Video"
-              aria-label="Fullscreen Video"
-            >
+            <button className="pip-action-btn" onClick={() => setVideoDisplayMode('fullscreen')} title="Fullscreen" aria-label="Fullscreen">
               <Maximize2 size={13} />
             </button>
-            <button
-              className="pip-action-btn pip-close-btn"
-              onClick={() => setVideoDisplayMode('audio')}
-              title="Close Video Mode (Audio Continues)"
-              aria-label="Close Video Mode"
-            >
+            <button className="pip-action-btn pip-close-btn" onClick={() => setVideoDisplayMode('audio')} title="Close" aria-label="Close">
               <X size={13} />
             </button>
           </div>
         </div>
 
-        {/* Video Placement Anchor */}
         <div ref={pipAnchorRef} className="pip-video-anchor" />
 
-        {/* Bottom indicator badge */}
         <div className="pip-footer-badge">
           {track.isLive ? (
-            <span className="pip-live-tag">
-              <span className="live-dot" /> LIVE
-            </span>
+            <span className="pip-live-tag"><span className="live-dot" /> LIVE</span>
           ) : (
             <span className="pip-quality-tag">HD 1080P</span>
           )}

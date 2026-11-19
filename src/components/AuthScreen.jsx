@@ -9,13 +9,11 @@ import {
   Check,
   AlertCircle,
   LogOut,
-  Sparkles,
   Music,
   ShieldCheck,
   Cloud,
   Headphones,
   Radio,
-  RefreshCw,
   CheckCircle2,
 } from 'lucide-react'
 import { WavelengthLogo, GoogleLogo, AppleLogo } from './RealLogos'

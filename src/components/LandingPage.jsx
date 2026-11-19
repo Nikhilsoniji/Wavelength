@@ -292,73 +292,61 @@ export default function LandingPage({ onBack }) {
         </div>
 
         <div className="download-cards-grid">
-          {/* iOS Card */}
-          <div className="download-card" onClick={onBack}>
-            <div className="dl-icon-wrap">
-              <AppleLogo size={36} color="#FFFFFF" />
-            </div>
-            <div className="dl-info">
-              <div className="dl-label">Apple Ecosystem</div>
-              <div className="dl-store-title">App Store</div>
-              <div className="dl-specs">iOS • iPadOS • macOS</div>
-            </div>
-            <div className="dl-rating">
-              <div className="stars-row">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
-                ))}
+          {[
+            {
+              icon: <AppleLogo size={36} color="#FFFFFF" />,
+              label: 'Apple Ecosystem',
+              store: 'App Store',
+              specs: 'iOS • iPadOS • macOS',
+              rating: '4.9 / 5.0 (24k ratings)',
+              btn: 'Open App',
+            },
+            {
+              featured: true,
+              icon: <GooglePlayLogo size={36} />,
+              label: 'Android',
+              store: 'Google Play',
+              specs: 'Android 10+ • Lossless Support',
+              rating: '4.8 / 5.0 (180k reviews)',
+              btn: 'Open App',
+            },
+            {
+              icon: <WavelengthLogo size={36} glowing={false} />,
+              label: 'Browser',
+              store: 'Web Studio',
+              specs: 'Chrome • Safari • Firefox • Edge',
+              badgeInstant: true,
+              btn: 'Launch Now',
+            },
+          ].map((dl) => (
+            <div key={dl.store} className={`download-card ${dl.featured ? 'featured-dl-card' : ''}`} onClick={onBack}>
+              {dl.featured && <div className="featured-badge">FEATURED</div>}
+              <div className="dl-icon-wrap">{dl.icon}</div>
+              <div className="dl-info">
+                <div className="dl-label">{dl.label}</div>
+                <div className="dl-store-title">{dl.store}</div>
+                <div className="dl-specs">{dl.specs}</div>
               </div>
-              <span>4.9 / 5.0 (24k ratings)</span>
-            </div>
-            <button className="dl-action-btn">
-              <span>Open App</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-
-          {/* Android Card */}
-          <div className="download-card featured-dl-card" onClick={onBack}>
-            <div className="featured-badge">FEATURED</div>
-            <div className="dl-icon-wrap">
-              <GooglePlayLogo size={36} />
-            </div>
-            <div className="dl-info">
-              <div className="dl-label">Android</div>
-              <div className="dl-store-title">Google Play</div>
-              <div className="dl-specs">Android 10+ • Lossless Support</div>
-            </div>
-            <div className="dl-rating">
-              <div className="stars-row">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
-                ))}
+              <div className="dl-rating">
+                {dl.badgeInstant ? (
+                  <div className="badge-instant">NO INSTALLATION NEEDED</div>
+                ) : (
+                  <>
+                    <div className="stars-row">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
+                      ))}
+                    </div>
+                    <span>{dl.rating}</span>
+                  </>
+                )}
               </div>
-              <span>4.8 / 5.0 (180k reviews)</span>
+              <button className={`dl-action-btn ${dl.featured ? 'primary-dl-btn' : ''}`}>
+                <span>{dl.btn}</span>
+                <ArrowRight size={16} />
+              </button>
             </div>
-            <button className="dl-action-btn primary-dl-btn">
-              <span>Open App</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
-
-          {/* Web Player Card */}
-          <div className="download-card" onClick={onBack}>
-            <div className="dl-icon-wrap">
-              <WavelengthLogo size={36} glowing={false} />
-            </div>
-            <div className="dl-info">
-              <div className="dl-label">Browser</div>
-              <div className="dl-store-title">Web Studio</div>
-              <div className="dl-specs">Chrome • Safari • Firefox • Edge</div>
-            </div>
-            <div className="dl-rating">
-              <div className="badge-instant">NO INSTALLATION NEEDED</div>
-            </div>
-            <button className="dl-action-btn">
-              <span>Launch Now</span>
-              <ArrowRight size={16} />
-            </button>
-          </div>
+          ))}
         </div>
       </section>
 
@@ -456,25 +444,18 @@ export default function LandingPage({ onBack }) {
           </div>
 
           <div className="footer-links-grid">
-            <div className="f-col">
-              <h4>Audio</h4>
-              <a href="#features">Lossless FLAC</a>
-              <a href="#features">Spatial Audio</a>
-              <a href="#features">AI Discovery</a>
-              <a href="#features">Live Radio</a>
-            </div>
-            <div className="f-col">
-              <h4>Platforms</h4>
-              <a href="#platforms">iOS App</a>
-              <a href="#platforms">Android App</a>
-              <a href="#platforms">Web Player</a>
-            </div>
-            <div className="f-col">
-              <h4>About</h4>
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
-              <a href="#">Support</a>
-            </div>
+            {[
+              { title: 'Audio', links: ['Lossless FLAC', 'Spatial Audio', 'AI Discovery', 'Live Radio'], href: '#features' },
+              { title: 'Platforms', links: ['iOS App', 'Android App', 'Web Player'], href: '#platforms' },
+              { title: 'About', links: ['Privacy', 'Terms', 'Support'], href: '#' },
+            ].map((col) => (
+              <div key={col.title} className="f-col">
+                <h4>{col.title}</h4>
+                {col.links.map((l) => (
+                  <a key={l} href={col.href}>{l}</a>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
 
